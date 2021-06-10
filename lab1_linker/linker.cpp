@@ -31,9 +31,12 @@ const int MEMORY_SIZE = 512;
 string fileName;
 ifstream input;
 char *mark;
+char *converted = new char[1024];
+int convertedLen;
 int lineNum = 0;
 int lineOffset = 1;
 int preLineOffset = 1; // for the offset in last line
+
 int totalInstruction = 0;
 
 // Symbol Table
@@ -44,7 +47,7 @@ int moduleNum = 0;
 int baseAddr = 0;
 
 int main() {
-    fileName = "/Users/yjeonlee/Desktop/OS_labs/Operating-Systems-Labs/lab1_Linker/inputs/input-1";
+    fileName = "/Users/yjeonlee/Desktop/OS_labs/Operating-Systems-Labs/lab1_Linker/inputs/input-20";
     //fileName = argv[1];
     passOne();
     passTwo();
@@ -94,6 +97,7 @@ void passTwo() {
         exit(1);
     }
 
+    lineNum = 0;
     baseAddr = 0;
     moduleNum = 0;
     while (!input.eof()) {
@@ -342,7 +346,16 @@ TokenInfo getToken() {
     if (mark != NULL) {
         result.token = mark;
         result.line = lineNum;
-        result.offset = ++lineOffset;
+
+        for (int i=lineOffset-1; i<convertedLen; i++) {
+            if (converted[i] == ' ' || converted[i] == '\t') {
+                lineOffset++;
+            } else {
+                break;
+            }
+        }
+        result.offset = lineOffset;
+        //cout << "lineNum: " << lineNum << "   offset: " << lineOffset << endl;
 
         lineOffset += strlen(result.token);
         mark = strtok(NULL, delim);
@@ -357,10 +370,19 @@ TokenInfo getToken() {
             char *copiedLine = new char[line.size()+1];
             copy(line.begin(), line.end(), copiedLine);
             copiedLine[line.size()] = '\0';
+            copy(line.begin(), line.end(), converted);
+            converted[line.size()] = '\0';
+            convertedLen = strlen(copiedLine);
             //cout << "len: " << strlen(copiedLine) << endl;
 
             if (isFirstElemDelimiters(copiedLine)) {
-                lineOffset = 2;
+                for (int i=0; i<strlen(copiedLine); i++) {
+                    if (copiedLine[i] == ' ' || copiedLine[i] == '\t') {
+                        lineOffset++;
+                    } else {
+                        break;
+                    }
+                }
             }
 //            else {
 //                lineOffset = 1;
@@ -370,6 +392,7 @@ TokenInfo getToken() {
             result.token = mark;
             result.line = lineNum;
             result.offset = lineOffset;
+            //cout << "lineNum: " << lineNum << "   offset: " << lineOffset << endl;
 
             lineOffset += strlen(result.token);
             mark = strtok(NULL, delim);
