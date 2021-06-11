@@ -12,6 +12,8 @@
 using namespace std;
 
 const char delim[] = " \t\r\n\v\f";
+//const char delim[] = " \t\n";
+// Above line also works well, but for considering more delimiters
 
 bool isValidIntegers (char* num) {
     for (int i=0; i<strlen(num); i++) {

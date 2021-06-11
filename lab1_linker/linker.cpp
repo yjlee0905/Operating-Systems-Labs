@@ -107,8 +107,6 @@ void passTwo() {
         UseList useList = parseUseList();
         ProgramText programText = parseProgramText();
 
-        // rule 4
-        //checkIsUsed(useList);
         buildMemoryMap(programText, useList);
         // rule 7
         checkRule7(programText, useList);
@@ -180,13 +178,6 @@ void checkIsUsed(string symbol) {
     if (idx != -1) {
         symbolTable.at(idx).isUsed = true;
     }
-//    for (int i=0; i<useList.useCount; i++) {
-//        string symbol = useList.symbols.at(i);
-//        int idx = getIdxFromSymbolTable(symbol);
-//        if (idx != -1) {
-//            symbolTable.at(idx).isUsed = true;
-//        }
-//    }
 }
 
 void buildMemoryMap(ProgramText programText, UseList useList) {
