@@ -8,10 +8,10 @@ Pass Two again parses the input and uses the base addresses and the symbol table
 
 ### How to run
 1. put all the samples(input and output files) and codes in the same directory.
-2. mkdir <your-outdir>
+2. mkdir [your-outdir]
 3. make linker
-4. ./runit.sh <your-outdir> ./linker
-5. ./gradeit.sh . <your-outdir>
+4. ./runit.sh [your-outdir] ./linker
+5. ./gradeit.sh . [your-outdir]
 
 ### Description
 * Header.h : definition of struct and errors
