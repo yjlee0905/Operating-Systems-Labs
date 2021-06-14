@@ -31,11 +31,11 @@ const int MEMORY_SIZE = 512;
 string fileName;
 ifstream input;
 char *mark;
-char *converted = new char[1024];
-int convertedLen;
+char line[1024];
 int lineNum = 0;
-int lineOffset = 1;
-int preLineOffset = 1; // for the offset in last line
+int lineOffset;
+int preLineOffset; // for the offset in last line
+int markLen = 0;
 
 int totalInstruction = 0;
 
@@ -46,9 +46,9 @@ vector<Rule7WarningInfo> rule7WarningInfos;
 int moduleNum = 0;
 int baseAddr = 0;
 
-int main(int argc, char* argv[]) {
-    //fileName = "/Users/yjeonlee/Desktop/OS_labs/Operating-Systems-Labs/lab1_Linker/inputs/input-20";
-    fileName = argv[1];
+int main() {
+    fileName = "/Users/yjeonlee/Desktop/OS_labs/Operating-Systems-Labs/lab1_Linker/inputs/input-1";
+    //fileName = argv[1];
     passOne();
     passTwo();
     return 0;
@@ -332,70 +332,43 @@ void printSymbolTable() {
 
 TokenInfo getToken() {
     TokenInfo result;
-    string line;
 
     if (mark != NULL) {
         result.token = mark;
         result.line = lineNum;
 
-        for (int i=lineOffset-1; i<convertedLen; i++) {
-            if (converted[i] == ' ' || converted[i] == '\t') {
-                lineOffset++;
-            } else {
-                break;
-            }
-        }
+        lineOffset = mark - line + 1;
         result.offset = lineOffset;
-        //cout << "lineNum: " << lineNum << "   offset: " << lineOffset << endl;
-
-        lineOffset += strlen(result.token);
+        //cout << "1 lineNum: " << lineNum << "   offset: " << lineOffset << endl;
+        markLen = strlen(mark);
         mark = strtok(NULL, delim);
     } else {
-        getline(input, line);
+        input.getline(line, 1024);
         preLineOffset = lineOffset;
         lineOffset = 1;
         lineNum++;
 
-        if (line.size() != 0) {
-            // convert string to char *
-            char *copiedLine = new char[line.size()+1];
-            copy(line.begin(), line.end(), copiedLine);
-            copiedLine[line.size()] = '\0';
-            copy(line.begin(), line.end(), converted);
-            converted[line.size()] = '\0';
-            convertedLen = strlen(copiedLine);
-            //cout << "len: " << strlen(copiedLine) << endl;
-
-            if (isFirstElemDelimiters(copiedLine)) {
-                for (int i=0; i<strlen(copiedLine); i++) {
-                    if (copiedLine[i] == ' ' || copiedLine[i] == '\t') {
-                        lineOffset++;
-                    } else {
-                        break;
-                    }
-                }
-            }
-//            else {
-//                lineOffset = 1;
-//            }
-
-            mark = strtok(copiedLine, delim);
+        if (strlen(line) != 0) {
+            mark = strtok(line, delim);
+            lineOffset = mark - line + 1;
+            //cout << "2 lineNum: " << lineNum << "   offset: " << lineOffset << endl;
             result.token = mark;
             result.line = lineNum;
             result.offset = lineOffset;
-            //cout << "lineNum: " << lineNum << "   offset: " << lineOffset << endl;
 
-            lineOffset += strlen(result.token);
+            markLen = strlen(mark);
             mark = strtok(NULL, delim);
         } else {
             if (!input.eof()) {
+                markLen = 0;
                 return getToken();
             } else {
                 // end of file
                 result.token = "EOF";
                 // final position in the file
                 result.line = lineNum-1;
-                result.offset = preLineOffset;
+                //cout << "preLineOffset: " << preLineOffset << " markLen: " << markLen << endl;
+                result.offset = preLineOffset + markLen;
                 input.close();
             }
         }
