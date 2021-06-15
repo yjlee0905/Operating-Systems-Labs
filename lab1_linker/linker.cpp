@@ -287,14 +287,20 @@ MemoryInfo processAddrMode_A (pair<char, int> codeCountPair) {
     int opcode = instr / 1000;
     int operand = instr % 1000;
 
-    if (operand > MEMORY_SIZE) {
-        processed.addr = opcode * 1000;
-        processed.errcode = 8;
+    if (opcode >= 10) {
+        processed.addr = 9999;
+        processed.errcode = 11;
         processed.moduleNum = moduleNum;
     } else {
-        processed.addr = instr;
-        processed.errcode = 0;
-        processed.moduleNum = moduleNum;
+        if (operand > MEMORY_SIZE) {
+            processed.addr = opcode * 1000;
+            processed.errcode = 8;
+            processed.moduleNum = moduleNum;
+        } else {
+            processed.addr = instr;
+            processed.errcode = 0;
+            processed.moduleNum = moduleNum;
+        }
     }
     return processed;
 }
