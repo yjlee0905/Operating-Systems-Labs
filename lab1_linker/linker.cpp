@@ -158,8 +158,11 @@ void checkRule7(ProgramText programText, UseList useList) {
     for (int i=0; i<programText.codeCount; i++) {
         if (programText.codeCountPairs.at(i).first == 'E') {
             int instr = programText.codeCountPairs.at(i).second;
+            int opcode = instr / 1000;
             int operand = instr % 1000;
-            check[operand] = 1;
+            if ((opcode < 10) && (operand < useList.useCount)) {
+                check[operand] = 1;
+            }
         }
     }
 
@@ -241,25 +244,28 @@ MemoryInfo processAddrMode_E (pair<char, int> codeCountPair, UseList useList) {
         processed.addr = 9999;
         processed.errcode = 11;
         processed.moduleNum = moduleNum;
-    } else if (operand >= useList.useCount) {
-        processed.addr = instr;
-        processed.errcode = 6;
-        processed.moduleNum = moduleNum;
     } else {
-        string key = useList.symbols.at(operand);
-        // rule 4- checking
-        checkIsUsed(key);
-        // rule 3
-        int idx = getIdxFromSymbolTable(key);
-        if (idx == -1) {
-            processed.addr = opcode * 1000;
-            processed.errcode = 3;
+        if (operand >= useList.useCount) {
+            processed.addr = instr;
+            processed.errcode = 6;
             processed.moduleNum = moduleNum;
-            processed.symForE = key;
         } else {
-            processed.addr = opcode * 1000 + symbolTable.at(idx).absoluteAddr ;
-            processed.errcode = 0;
-            processed.moduleNum = moduleNum;
+            string key = useList.symbols.at(operand);
+            // rule 4 - checking
+            checkIsUsed(key);
+
+            // rule 3
+            int idx = getIdxFromSymbolTable(key);
+            if (idx == -1) {
+                processed.addr = opcode * 1000;
+                processed.errcode = 3;
+                processed.moduleNum = moduleNum;
+                processed.symForE = key;
+            } else {
+                processed.addr = opcode * 1000 + symbolTable.at(idx).absoluteAddr ;
+                processed.errcode = 0;
+                processed.moduleNum = moduleNum;
+            }
         }
     }
     return processed;
