@@ -46,13 +46,13 @@ vector<Rule7WarningInfo> rule7WarningInfos;
 int moduleNum = 0;
 int baseAddr = 0;
 
-int main(int argc, char* argv[]) {
-    //fileName = "/Users/yjeonlee/Desktop/OS_labs/Operating-Systems-Labs/lab1_Linker/inputs/input-20";
-    fileName = argv[1];
-    passOne();
-    passTwo();
-    return 0;
-}
+//int main(int argc, char* argv[]) {
+//    //fileName = "/Users/yjeonlee/Desktop/OS_labs/Operating-Systems-Labs/lab1_Linker/inputs/input-20";
+//    fileName = argv[1];
+//    passOne();
+//    passTwo();
+//    return 0;
+//}
 
 void passOne() {
     input.open(fileName.c_str());
