@@ -7,23 +7,18 @@
 
 #include <iostream>
 #include <deque>
+#include "Constants.h"
 #include "Process.h"
 
 using namespace std;
 
-typedef enum {
-    STATE_CREATED,
-    STATE_READY,
-    STATE_RUNNING,
-    STATE_BLOCKED
-} process_state_t;
-
 class Event {
 private:
-    Process* process;
     process_state_t oldState;
     process_state_t newState;
 public:
+    Process* process;
+    trans transition;
     int timeStamp;
 
     Event(Process* process, process_state_t oldState, process_state_t newState);
