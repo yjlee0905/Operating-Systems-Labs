@@ -10,7 +10,7 @@
 
 using namespace std;
 
-class Scheduler {
+class Scheduler{
 public:
     Scheduler();
     virtual void addProcess(Process* p);
@@ -18,9 +18,10 @@ public:
     // virtual void testPreempt(Process* p, int curTime); TODO
 };
 
-class FCFS : Scheduler {
-    deque<Process* > readyQ;
-
+class FCFS : public Scheduler{
+private:
+    deque<Process*> readyQ;
+public:
     FCFS();
     void addProcess(Process* p);
     Process* getNextProcess();

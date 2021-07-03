@@ -8,30 +8,26 @@
 using namespace std;
 
 Scheduler::Scheduler(){
-    cout << "test" << endl;
+
 }
 
-void addProcess(Process* p) {
-    cout << "test1" << endl;
-}
+void Scheduler::addProcess(Process *p) {}
 
-Process* getNextProcess() {
-    cout << "test2" << endl;
-}
+Process* Scheduler::getNextProcess(){}
 
 FCFS::FCFS(){
-    cout << "test3" << endl;
+
 }
 
-void FCFS::addProcess(Process* p) {
-    readyQ.push_back(p);
+void FCFS::addProcess(Process* process){
+    readyQ.push_back(process);
 }
 
 Process* FCFS::getNextProcess(){
-    if (readyQ.empty())
-        return nullptr;
-
-    Process* front = readyQ.front();
-    readyQ.pop_front();
-    return front;
+    Process* p;
+    if (!readyQ.empty()){
+        p = readyQ.front();
+        readyQ.pop_front();
+    }
+    return p;;
 }
