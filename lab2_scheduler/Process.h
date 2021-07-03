@@ -22,9 +22,19 @@ public:
     int priority; // PRIO
     int CPUwaitingTime; // CW
 
-    int remainingTime; // rem
+    // current info
+    int curCPUburst; // cb
+    int curIOburst; // ib
+    int curRemainingTime; // rem
+
+    // prev info
+    int prevStateDuration; // how long the process was in the prev state
+
     // TODO check process creation situations
     Process(int pid, int arrivalTime, int totalCPUtime, int CPUburst, int IOburst);
+    int getPID();
+    int getTotalCPUburst();
+    int getTotalIOburst();
 };
 
 #endif //OPERATING_SYSTEMS_LABS_PROCESS_H

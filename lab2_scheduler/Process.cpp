@@ -10,4 +10,11 @@ Process::Process(int pid, int arrivalTime, int totalCPUtime, int CPUburst, int I
     this->totalCPUtime = totalCPUtime;
     this->CPUburst = CPUburst;
     this->IOburst = IOburst;
+
+    this->curRemainingTime = arrivalTime;
+    this->prevStateDuration = 0;
 }
+
+int Process::getPID() {return this->pid;}
+int Process::getTotalCPUburst() {return this->CPUburst;}
+int Process::getTotalIOburst() {return this->IOburst;}

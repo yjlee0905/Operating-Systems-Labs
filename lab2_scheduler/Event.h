@@ -13,15 +13,14 @@
 using namespace std;
 
 class Event {
-private:
-    process_state_t oldState;
-    process_state_t newState;
 public:
     Process* process;
+    process_state_t oldState;
+    process_state_t newState;
     trans transition;
     int timeStamp;
 
-    Event(Process* process, process_state_t oldState, process_state_t newState);
+    Event(int timeStamp, Process* process, process_state_t oldState, process_state_t newState, trans transition);
 };
 
 class EventQueue { // TODO EventQueue는 Deque으로??

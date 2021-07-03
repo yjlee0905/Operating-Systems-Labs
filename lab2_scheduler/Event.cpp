@@ -4,10 +4,12 @@
 
 #include "Event.h"
 
-Event::Event(Process* process, process_state_t oldState, process_state_t newState) {
+Event::Event(int timeStamp, Process* process, process_state_t oldState, process_state_t newState, trans transition) {
+    this->timeStamp = timeStamp;
     this->process = process;
     this->oldState = oldState;
     this->newState = newState;
+    this->transition = transition;
 }
 
 
