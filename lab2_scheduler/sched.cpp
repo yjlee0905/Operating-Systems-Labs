@@ -14,11 +14,14 @@ void initEventQueue(string fileName);
 void readRandomNums(string fileName);
 
 EventQueue evtQueue;
-vector<int> randomNums;
+vector<int> randomNums; // max : 4611686018427387903(built as 64-bit target), 1073741823(built as 32-bit target)
 
 int main() {
-    string fileName = "/Users/yjeonlee/Desktop/Operating_Systems/Operating-Systems-Labs/lab2_scheduler/inputs/input6";
-    initEventQueue(fileName);
+    string inputFileName = "/Users/yjeonlee/Desktop/Operating_Systems/Operating-Systems-Labs/lab2_scheduler/inputs/input6";
+    string rFileName = "/Users/yjeonlee/Desktop/Operating_Systems/Operating-Systems-Labs/lab2_scheduler/rfile";
+
+    readRandomNums(rFileName);
+    initEventQueue(inputFileName);
 
     // simulation
     while (!evtQueue.eventQ.empty()) {
@@ -44,9 +47,6 @@ int main() {
         delete evt;
         evt = nullptr;
     }
-
-//    string fileName = "/Users/yjeonlee/Desktop/Operating_Systems/Operating-Systems-Labs/lab2_scheduler/rfile";
-//    readRandomNums(fileName);
 }
 
 void initEventQueue(string fileName) {
@@ -65,13 +65,13 @@ void initEventQueue(string fileName) {
         char *copiedLine = new char[line.size()+1];
         copy(line.begin(), line.end(), copiedLine);
         copiedLine[line.size()] = '\0';
-        cout << copiedLine << endl;
+        //cout << copiedLine << endl;
 
         char * ptr = strtok(copiedLine, delim);
         int parsed[4];
         int i=0;
         while (ptr != NULL) {
-            cout << ptr  << "     converted: " << atoi(ptr) << endl;
+            //cout << ptr  << "     converted: " << atoi(ptr) << endl;
             parsed[i++] = atoi(ptr);
             ptr = strtok(NULL, delim);
         }
@@ -79,7 +79,6 @@ void initEventQueue(string fileName) {
         Event* evt = new Event(p, STATE_CREATED, STATE_READY);
         evtQueue.putEvent(evt);
     }
-    //cout << evtQueue.eventQ.size() << endl;
     input.close();
 }
 
@@ -103,4 +102,3 @@ void readRandomNums(string fileName) {
 
     input.close();
 }
-
