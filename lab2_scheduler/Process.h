@@ -19,7 +19,8 @@ public:
     int finishingTime; // FT
     int turnAroundTime; // TT
     int IOtime; // IT
-    int priority; // PRIO
+    int staticPriority; // PRIO
+    int dynamicPriority;
     int CPUwaitingTime; // CW
 
     // current info
@@ -28,10 +29,10 @@ public:
     int curRemainingTime; // rem
 
     // prev info
-    int prevStateDuration; // how long the process was in the prev state
+    int timeInPrevState; // how long the process was in the prev state
+    int stateTs;
 
-    // TODO check process creation situations
-    Process(int pid, int arrivalTime, int totalCPUtime, int CPUburst, int IOburst);
+    Process(int pid, int arrivalTime, int totalCPUtime, int CPUburst, int IOburst, int priority);
     int getPID();
     int getTotalCPUburst();
     int getTotalIOburst();

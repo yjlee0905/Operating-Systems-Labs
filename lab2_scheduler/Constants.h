@@ -5,6 +5,12 @@
 #ifndef OPERATING_SYSTEMS_LABS_CONSTANTS_H
 #define OPERATING_SYSTEMS_LABS_CONSTANTS_H
 
+#include <string>
+
+using namespace std;
+
+const int DEFAULT_MAX_PRIO = 4;
+
 typedef enum {
     STATE_CREATED,
     STATE_READY,
@@ -17,10 +23,11 @@ typedef enum {
     TRANS_TO_READY,
     TRANS_TO_RUN,
     TRANS_TO_BLOCK,
-    TRANS_TO_PREEMPT
+    TRANS_TO_PREEMPT,
+    TRANS_TO_DONE
 } trans;
 
-inline const char* processStateToString(process_state_t state) {
+inline const string processStateToString(process_state_t state) {
     switch (state) {
         case STATE_CREATED: return "CREATED";
         case STATE_READY: return "READY";

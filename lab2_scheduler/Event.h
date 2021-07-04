@@ -18,9 +18,9 @@ public:
     process_state_t oldState;
     process_state_t newState;
     trans transition;
-    int timeStamp;
+    int evtTimeStamp;
 
-    Event(int timeStamp, Process* process, process_state_t oldState, process_state_t newState, trans transition);
+    Event(int evtTimeStamp, Process* process, trans transition, process_state_t oldState, process_state_t newState);
 };
 
 class EventQueue { // TODO EventQueue는 Deque으로??
@@ -29,6 +29,7 @@ public:
 
     Event* getEvent();
     void putEvent(Event* newEvent);
+    int getNextEventTime();
     // TODO rm_event();
 };
 

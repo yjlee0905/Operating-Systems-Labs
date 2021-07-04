@@ -18,11 +18,11 @@ public:
     // virtual void testPreempt(Process* p, int curTime); TODO
 };
 
-class FCFS : public Scheduler{
+class FCFSsched : public Scheduler{
 private:
-    deque<Process*> readyQ;
+    deque<Process*> runQ;
 public:
-    FCFS();
+    FCFSsched();
     void addProcess(Process* p);
     Process* getNextProcess();
 };

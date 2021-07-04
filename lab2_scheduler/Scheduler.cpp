@@ -2,32 +2,27 @@
 // Created by Yunjeon Lee on 2021/07/03.
 //
 
-#include <iostream>
 #include "Scheduler.h"
 
 using namespace std;
 
-Scheduler::Scheduler(){
-
-}
+Scheduler::Scheduler(){}
 
 void Scheduler::addProcess(Process *p) {}
 
 Process* Scheduler::getNextProcess(){}
 
-FCFS::FCFS(){
+FCFSsched::FCFSsched(){}
 
+void FCFSsched::addProcess(Process* process){
+    runQ.push_back(process);
 }
 
-void FCFS::addProcess(Process* process){
-    readyQ.push_back(process);
-}
-
-Process* FCFS::getNextProcess(){
+Process* FCFSsched::getNextProcess(){
     Process* p;
-    if (!readyQ.empty()){
-        p = readyQ.front();
-        readyQ.pop_front();
+    if (!runQ.empty()){
+        p = runQ.front();
+        runQ.pop_front();
     }
-    return p;;
+    return p;
 }
