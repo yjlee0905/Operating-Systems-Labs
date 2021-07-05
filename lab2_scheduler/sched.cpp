@@ -33,7 +33,7 @@ bool callScheduler = false;
 Process* currentRunningProcess = nullptr;
 
 int main() {
-    string inputFileName = "/Users/yjeonlee/Desktop/Operating_Systems/Operating-Systems-Labs/lab2_scheduler/inputs/input0";
+    string inputFileName = "/Users/yjeonlee/Desktop/Operating_Systems/Operating-Systems-Labs/lab2_scheduler/inputs/input1";
     string rFileName = "/Users/yjeonlee/Desktop/Operating_Systems/Operating-Systems-Labs/lab2_scheduler/rfile";
 
     readRandomNums(rFileName);
@@ -51,7 +51,6 @@ int main() {
             case TRANS_TO_READY:
                 handleTransToReady(evt);
                 printVerbose(currentTime, evt);
-                //scheduler->showShedulerStatus();
                 break;
             case TRANS_TO_RUN:
                 handleTransToRun(evt);
@@ -74,7 +73,6 @@ int main() {
                 break;
         }
 
-        Event* tmp = evt;
         // remove current event object from Memory (completed event processing)
         delete evt;
         evt = nullptr;
@@ -191,6 +189,7 @@ void handleTransToDone(Event* evt) {
     proc->finishingTime = currentTime;
     proc->curRemainingTime = 0;
     callScheduler = true;
+    currentRunningProcess = nullptr;
 }
 
 void printVerbose(int currentTime, Event* evt) {

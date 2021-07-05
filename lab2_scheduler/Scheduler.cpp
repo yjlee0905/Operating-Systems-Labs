@@ -28,10 +28,10 @@ Process* FCFSsched::getNextProcess(){
     if (!runQ.empty()){
         p = runQ.front();
         runQ.pop_front();
+        return p;
     } else {
         return nullptr;
     }
-    return p;
 }
 
 int FCFSsched::getProcessCount() {
