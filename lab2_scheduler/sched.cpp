@@ -51,6 +51,7 @@ int main() {
             case TRANS_TO_READY:
                 handleTransToReady(evt);
                 printVerbose(currentTime, evt);
+                scheduler->showShedulerStatus();
                 break;
             case TRANS_TO_RUN:
                 handleTransToRun(evt);
@@ -73,6 +74,7 @@ int main() {
                 break;
         }
 
+        Event* tmp = evt;
         // remove current event object from Memory (completed event processing)
         delete evt;
         evt = nullptr;
@@ -85,6 +87,9 @@ int main() {
             if (currentRunningProcess == nullptr) {
                 currentRunningProcess = scheduler->getNextProcess();
                 if (currentRunningProcess == nullptr) continue;
+
+                cout << "Call Sched: " << currentTime << " " << tmp->process->getPID() << " " << tmp->process->timeInPrevState << ": "
+                     << processStateToString(tmp->oldState) << " -> " << processStateToString(tmp->newState) << endl;
 
                 // create event to make process runnable for same time.
                 Event* e = new Event(currentTime, currentRunningProcess, TRANS_TO_RUN, currentRunningProcess->processState, STATE_RUNNING);
@@ -111,11 +116,12 @@ void handleTransToReady(Event* evt) {
     proc->timeInPrevState = timeInPrevState;
     proc->stateTs = currentTime;
 
-    Event* newEvt = new Event(currentTime, proc, TRANS_TO_RUN, STATE_READY, STATE_RUNNING);
-    evtQueue->putEvent(newEvt);
+//    Event* newEvt = new Event(currentTime, proc, TRANS_TO_RUN, STATE_READY, STATE_RUNNING);
+//    evtQueue->putEvent(newEvt);
 
+    cout << "insert to sched" << endl;
     scheduler->addProcess(proc);
-    //callScheduler = true;
+    callScheduler = true;
 }
 
 void handleTransToRun(Event* evt) {
@@ -168,7 +174,9 @@ void handleTransToBlock(Event* evt) {
 
     Event *e = new Event(currentTime + proc->curIOburst, proc, TRANS_TO_READY, proc->processState, STATE_READY);
     evtQueue->putEvent(e);
-    //callScheduler = true;
+
+    callScheduler = true;
+    currentRunningProcess = nullptr;
 }
 
 void handleTransToDone(Event* evt) {
@@ -182,7 +190,7 @@ void handleTransToDone(Event* evt) {
     proc->timeInPrevState = timeInPrevState;
     proc->finishingTime = currentTime;
     proc->curRemainingTime = 0;
-    // set event??
+    callScheduler = true;
 }
 
 void printVerbose(int currentTime, Event* evt) {
