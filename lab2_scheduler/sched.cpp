@@ -119,7 +119,7 @@ void handleTransToReady(Event* evt) {
 //    Event* newEvt = new Event(currentTime, proc, TRANS_TO_RUN, STATE_READY, STATE_RUNNING);
 //    evtQueue->putEvent(newEvt);
 
-    cout << "insert to sched" << endl;
+    //cout << "insert to sched" << endl;
     scheduler->addProcess(proc);
     callScheduler = true;
 }
