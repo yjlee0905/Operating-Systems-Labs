@@ -12,6 +12,8 @@ using namespace std;
 
 class Scheduler{
 public:
+    deque<Process*> runQ;
+
     Scheduler();
     virtual void addProcess(Process* p);
     virtual Process* getNextProcess();
@@ -22,9 +24,9 @@ public:
 };
 
 class FCFSsched : public Scheduler{
-private:
-    deque<Process*> runQ;
 public:
+    deque<Process*> runQ;
+
     FCFSsched();
     void addProcess(Process* p);
     Process* getNextProcess();

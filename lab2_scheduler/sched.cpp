@@ -51,7 +51,7 @@ int main() {
             case TRANS_TO_READY:
                 handleTransToReady(evt);
                 printVerbose(currentTime, evt);
-                scheduler->showShedulerStatus();
+                //scheduler->showShedulerStatus();
                 break;
             case TRANS_TO_RUN:
                 handleTransToRun(evt);
@@ -88,8 +88,8 @@ int main() {
                 currentRunningProcess = scheduler->getNextProcess();
                 if (currentRunningProcess == nullptr) continue;
 
-                cout << "Call Sched: " << currentTime << " " << tmp->process->getPID() << " " << tmp->process->timeInPrevState << ": "
-                     << processStateToString(tmp->oldState) << " -> " << processStateToString(tmp->newState) << endl;
+//                cout << "Call Sched: " << currentTime << " " << tmp->process->getPID() << " " << tmp->process->timeInPrevState << ": "
+//                     << processStateToString(tmp->oldState) << " -> " << processStateToString(tmp->newState) << endl;
 
                 // create event to make process runnable for same time.
                 Event* e = new Event(currentTime, currentRunningProcess, TRANS_TO_RUN, currentRunningProcess->processState, STATE_RUNNING);

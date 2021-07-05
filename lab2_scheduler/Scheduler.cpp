@@ -28,6 +28,8 @@ Process* FCFSsched::getNextProcess(){
     if (!runQ.empty()){
         p = runQ.front();
         runQ.pop_front();
+    } else {
+        return nullptr;
     }
     return p;
 }
