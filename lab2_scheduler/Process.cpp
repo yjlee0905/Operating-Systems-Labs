@@ -13,7 +13,7 @@ Process::Process(int pid, int arrivalTime, int totalCPUtime, int CPUburst, int I
 
     this->processState = STATE_CREATED;
     this->staticPriority = priority;
-    this->dynamicPriority = priority-1;
+    this->dynamicPriority = priority-1; // TODO check
 
     this->curCPUburst = 0;
     this->curIOburst = 0;

@@ -40,7 +40,7 @@ void EventQueue::putEvent(Event* newEvent) {
 
 int EventQueue::getNextEventTime() {
     if (eventQ.empty())
-        return -1;
+        return -1; // TODO check what happens when it returns -1
 
     return eventQ.front()->evtTimeStamp;
 }

@@ -17,11 +17,20 @@ void initEventQueue(string fileName);
 void readRandomNums(string fileName);
 int getRandom(int burst);
 void printVerbose(int currentTime, Event* evt);
+void handleTransToReady(Event* evt);
+void handleTransToRun(Event* evt);
+void handleTransToBlock(Event* evt);
+void handleTransToDone(Event* evt);
 
 EventQueue* evtQueue = new EventQueue(); // TODO 포인터 제거?
 queue<Process*> results;
 vector<int> randomNums; // max : 4611686018427387903(built as 64-bit target), 1073741823(built as 32-bit target)
 int ofs = 0;
+
+// scheduler
+Scheduler* scheduler = new FCFSsched();
+bool callScheduler = false;
+Process* currentRunningProcess = nullptr;
 
 int main() {
     string inputFileName = "/Users/yjeonlee/Desktop/Operating_Systems/Operating-Systems-Labs/lab2_scheduler/inputs/input0";
@@ -30,87 +39,26 @@ int main() {
     readRandomNums(rFileName);
     initEventQueue(inputFileName);
 
-    Scheduler* scheduler = new FCFSsched();
-    bool callScheduler = false;
-    Process* currentRunningProcess = nullptr;
-
     // simulation
     while (!evtQueue->eventQ.empty()) {
         Event* evt = evtQueue->eventQ.front();
         evtQueue->eventQ.pop_front();
 
-        Process* proc = evt->process; // this is the process the event works on
+        //Process* proc = evt->process; // this is the process the event works on
         int currentTime = evt->evtTimeStamp;
-        int timeInPrevState = currentTime - proc->stateTs;
 
         switch (evt->transition) {
             case TRANS_TO_READY:
-                // prevState: Created, Running, Blocked, + Preempted
-                // nextState: Running
-
-                // Ready state
-                proc->processState = STATE_READY;
-                proc->curCPUburst = 0;
-                proc->curIOburst = 0;
-                proc->timeInPrevState = timeInPrevState;
-                proc->stateTs = currentTime;
-                evt->oldState = STATE_READY;
-                evt->newState = STATE_RUNNING;
-                evt->transition = TRANS_TO_RUN;
-                // evt->evtTimeStamp ?
-                scheduler->addProcess(proc);
-                callScheduler = true;
+                handleTransToReady(evt);
+                printVerbose(currentTime, evt);
                 break;
             case TRANS_TO_RUN:
-                // prevState: Ready
-                // nextState: Ready, Blocked
-
-                proc->processState = STATE_RUNNING;
-                proc->curCPUburst = getRandom(proc->getTotalCPUburst()); // transition 2: Read > Running 일 때만
-                if (proc->curCPUburst > proc->curRemainingTime) {
-                    proc->curCPUburst = proc->curRemainingTime;
-                }
-                proc->curRemainingTime = proc->getTotalCPUburst() - proc->curCPUburst;
-                proc->curIOburst = 0;
-
-                proc->timeInPrevState = timeInPrevState;
-                proc->stateTs = currentTime;
-
-                evt->oldState = STATE_RUNNING;
-                evt->newState = STATE_BLOCKED;
-                evt->transition = TRANS_TO_BLOCK;
-                // evt->evtTimeStamp ?
-
-                if (proc->curRemainingTime <= proc->curCPUburst) {
-                    int timestamp = currentTime + proc->curRemainingTime;
-                    Event* e = new Event(timestamp, proc, TRANS_TO_DONE, proc->processState, STATE_DONE);
-                    evtQueue->putEvent(e);
-                } else {
-                    int timestamp = currentTime + proc->curCPUburst;
-                    Event *e = new Event(timestamp, proc, TRANS_TO_BLOCK, proc->processState, STATE_BLOCKED);
-                    evtQueue->putEvent(e);
-                }
+                handleTransToRun(evt);
                 printVerbose(currentTime, evt);
                 break;
             case TRANS_TO_BLOCK:
-                // prevState: Running
-                // nextState: Ready
+                handleTransToBlock(evt);
                 printVerbose(currentTime, evt);
-
-                proc->processState = STATE_BLOCKED;
-                proc->stateTs = currentTime;
-                proc->curIOburst = getRandom(proc->getTotalIOburst()); // transition 3 : Running > Blocked 일 때만
-
-                // save prev state
-                proc->timeInPrevState = proc->curIOburst;
-
-                evt->oldState = STATE_BLOCKED;
-
-                Event *e = new Event(currentTime + proc->curIOburst, proc, TRANS_TO_READY, proc->processState, STATE_READY);
-                evtQueue->putEvent(e);
-                callScheduler = true;
-                currentRunningProcess = nullptr;
-                callScheduler = true;
                 break;
 //            case TRANS_TO_PREEMPT :
 //                //proc->processState =
@@ -119,9 +67,13 @@ int main() {
 //                proc->stateTs = currentTime;
 //                callScheduler = true;
 //                break;
+            case TRANS_TO_DONE:
+                handleTransToDone(evt);
+                printVerbose(currentTime, evt);
+                break;
         }
 
-        // remove current event object from Memory
+        // remove current event object from Memory (completed event processing)
         delete evt;
         evt = nullptr;
 
@@ -142,19 +94,115 @@ int main() {
     }
 }
 
+void handleTransToReady(Event* evt) {
+    Process* proc = evt->process; // this is the process the event works on
+    int currentTime = evt->evtTimeStamp;
+    int timeInPrevState = currentTime - proc->stateTs;
+
+    // READY로 바뀌는 순간
+    // prevState: Created, Running, Blocked, + Preempted
+    // nextState: Running
+
+    // Ready state
+    proc->processState = STATE_READY;
+    proc->curCPUburst = 0;
+    proc->curIOburst = 0;
+    //proc->curRemainingTime
+    proc->timeInPrevState = timeInPrevState;
+    proc->stateTs = currentTime;
+
+    Event* newEvt = new Event(currentTime, proc, TRANS_TO_RUN, STATE_READY, STATE_RUNNING);
+    evtQueue->putEvent(newEvt);
+
+    scheduler->addProcess(proc);
+    //callScheduler = true;
+}
+
+void handleTransToRun(Event* evt) {
+    Process* proc = evt->process; // this is the process the event works on
+    int currentTime = evt->evtTimeStamp;
+    int timeInPrevState = currentTime - proc->stateTs;
+
+    // prevState: Ready
+    // nextState: Ready, Blocked
+
+    proc->processState = STATE_RUNNING;
+    if (evt->oldState == STATE_READY) {
+        proc->curCPUburst = getRandom(proc->getTotalCPUburst()); // transition 2: Read > Running 일 때만
+        if (proc->curCPUburst > proc->curRemainingTime) {
+            proc->curCPUburst = proc->curRemainingTime;
+        }
+    }
+    //proc->curRemainingTime = proc->curRemainingTime - proc->curCPUburst;
+    proc->curIOburst = 0;
+    proc->timeInPrevState = timeInPrevState;
+    proc->stateTs = currentTime;
+
+    if (proc->curRemainingTime <= proc->curCPUburst) {
+        int evtTimestamp = currentTime + proc->curRemainingTime;
+        Event* e = new Event(evtTimestamp, proc, TRANS_TO_DONE, proc->processState, STATE_DONE);
+        evtQueue->putEvent(e);
+    } else {
+        int evtTimestamp = currentTime + proc->curCPUburst;
+        Event *e = new Event(evtTimestamp, proc, TRANS_TO_BLOCK, proc->processState, STATE_BLOCKED);
+        evtQueue->putEvent(e);
+    }
+    // TODO TRANS_TO_PREEMPT
+}
+
+void handleTransToBlock(Event* evt) {
+    Process* proc = evt->process; // this is the process the event works on
+    int currentTime = evt->evtTimeStamp;
+    int timeInPrevState = currentTime - proc->stateTs;
+    // prevState: Running
+    // nextState: Ready
+
+    proc->processState = STATE_BLOCKED;
+    if (evt->oldState == STATE_RUNNING) {
+        proc->curIOburst = getRandom(proc->getTotalIOburst()); // transition 3 : Running > Blocked 일 때만
+    }
+    proc->curCPUburst = 0;
+    proc->timeInPrevState = timeInPrevState;
+    proc->curRemainingTime = proc->curRemainingTime - proc->timeInPrevState;
+    proc->stateTs = currentTime;
+
+    Event *e = new Event(currentTime + proc->curIOburst, proc, TRANS_TO_READY, proc->processState, STATE_READY);
+    evtQueue->putEvent(e);
+    //callScheduler = true;
+}
+
+void handleTransToDone(Event* evt) {
+    Process* proc = evt->process; // this is the process the event works on
+    int currentTime = evt->evtTimeStamp;
+    int timeInPrevState = currentTime - proc->stateTs;
+    // prevState: Running
+    // nextState: ?
+
+    proc->processState = STATE_DONE;
+    proc->timeInPrevState = timeInPrevState;
+    proc->finishingTime = currentTime;
+    proc->curRemainingTime = 0;
+    // set event??
+}
+
 void printVerbose(int currentTime, Event* evt) {
-    if ((processStateToString(evt->oldState).compare("CREATED") == 0) && (processStateToString(evt->newState).compare("READY") == 0)) {
+    if ((evt->oldState == STATE_CREATED) && (evt->newState == STATE_READY)) {
         cout << currentTime << " " << evt->process->getPID() << " " << evt->process->timeInPrevState << ": "
              << processStateToString(evt->oldState) << " -> " << processStateToString(evt->newState) << endl;
-    } else if ((processStateToString(evt->oldState) == "READY") && (processStateToString(evt->newState) == "RUNNG")) {
+    } else if ((evt->oldState == STATE_BLOCKED) && (evt->newState == STATE_READY)) {
+        cout << currentTime << " " << evt->process->getPID() << " " << evt->process->timeInPrevState << ": "
+             << processStateToString(evt->oldState) << " -> " << processStateToString(evt->newState) << endl;
+    } else if ((evt->oldState == STATE_READY) && (evt->newState == STATE_RUNNING)) {
         cout << currentTime << " " << evt->process->getPID() << " " << evt->process->timeInPrevState << ": "
              << processStateToString(evt->oldState) << " -> " << processStateToString(evt->newState)
              << " cb=" << evt->process->curCPUburst << " rem=" << evt->process->curRemainingTime
              << " prio=" << evt->process->dynamicPriority << endl;
-    } else if ((processStateToString(evt->oldState) == "RUNNG") && (processStateToString(evt->newState) == "BLOCK")) {
+    } else if ((evt->oldState == STATE_RUNNING) && (evt->newState == STATE_BLOCKED)) {
         cout << currentTime << " " << evt->process->getPID() << " " << evt->process->timeInPrevState << ": "
              << processStateToString(evt->oldState) << " -> " << processStateToString(evt->newState)
              << "  ib=" << evt->process->curIOburst << " rem=" << evt->process->curRemainingTime << endl;
+    } else if (evt->process->processState == STATE_DONE) {
+        cout << currentTime << " " << evt->process->getPID() << " " << evt->process->timeInPrevState << ": Done" << endl;
     }
 }
 
