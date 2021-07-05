@@ -11,6 +11,10 @@ Process::Process(int pid, int arrivalTime, int totalCPUtime, int CPUburst, int I
     this->CPUburst = CPUburst;
     this->IOburst = IOburst;
 
+    this->finishingTime = 0;
+    this->IOtime = 0;
+    this->CPUwaitingTime = 0;
+
     this->processState = STATE_CREATED;
     this->staticPriority = priority;
     this->dynamicPriority = priority-1; // TODO check
@@ -21,8 +25,11 @@ Process::Process(int pid, int arrivalTime, int totalCPUtime, int CPUburst, int I
 
     this->timeInPrevState = 0;
     this->stateTs = arrivalTime;
+
 }
 
 int Process::getPID() {return this->pid;}
-int Process::getTotalCPUburst() {return this->CPUburst;}
-int Process::getTotalIOburst() {return this->IOburst;}
+int Process::getArrivalTime() {return this->arrivalTime;}
+int Process::getTotalCPUtime() {return this->totalCPUtime;}
+int Process::getCPUburst() {return this->CPUburst;}
+int Process::getIOburst() {return this->IOburst;}

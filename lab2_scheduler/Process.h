@@ -34,8 +34,10 @@ public:
 
     Process(int pid, int arrivalTime, int totalCPUtime, int CPUburst, int IOburst, int priority);
     int getPID();
-    int getTotalCPUburst();
-    int getTotalIOburst();
+    int getArrivalTime();
+    int getTotalCPUtime();
+    int getCPUburst();
+    int getIOburst();
 };
 
 #endif //OPERATING_SYSTEMS_LABS_PROCESS_H

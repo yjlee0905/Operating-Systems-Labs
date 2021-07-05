@@ -16,14 +16,15 @@ using namespace std;
 void initEventQueue(string fileName);
 void readRandomNums(string fileName);
 int getRandom(int burst);
-void printVerbose(int currentTime, Event* evt);
 void handleTransToReady(Event* evt);
 void handleTransToRun(Event* evt);
 void handleTransToBlock(Event* evt);
 void handleTransToDone(Event* evt);
+void printStatistics(string schedAlgo);
+void printVerbose(int currentTime, Event* evt);
 
 EventQueue* evtQueue = new EventQueue(); // TODO 포인터 제거?
-queue<Process*> results;
+deque<Process*> results;
 vector<int> randomNums; // max : 4611686018427387903(built as 64-bit target), 1073741823(built as 32-bit target)
 int ofs = 0;
 
@@ -33,7 +34,7 @@ bool callScheduler = false;
 Process* currentRunningProcess = nullptr;
 
 int main() {
-    string inputFileName = "/Users/yjeonlee/Desktop/Operating_Systems/Operating-Systems-Labs/lab2_scheduler/inputs/input1";
+    string inputFileName = "/Users/yjeonlee/Desktop/Operating_Systems/Operating-Systems-Labs/lab2_scheduler/inputs/input0";
     string rFileName = "/Users/yjeonlee/Desktop/Operating_Systems/Operating-Systems-Labs/lab2_scheduler/rfile";
 
     readRandomNums(rFileName);
@@ -95,6 +96,7 @@ int main() {
             }
         }
     }
+    printStatistics("FCFS");
 }
 
 void handleTransToReady(Event* evt) {
@@ -132,7 +134,7 @@ void handleTransToRun(Event* evt) {
 
     proc->processState = STATE_RUNNING;
     if (evt->oldState == STATE_READY) {
-        proc->curCPUburst = getRandom(proc->getTotalCPUburst()); // transition 2: Read > Running 일 때만
+        proc->curCPUburst = getRandom(proc->getCPUburst()); // transition 2: Read > Running 일 때만
         if (proc->curCPUburst > proc->curRemainingTime) {
             proc->curCPUburst = proc->curRemainingTime;
         }
@@ -163,7 +165,8 @@ void handleTransToBlock(Event* evt) {
 
     proc->processState = STATE_BLOCKED;
     if (evt->oldState == STATE_RUNNING) {
-        proc->curIOburst = getRandom(proc->getTotalIOburst()); // transition 3 : Running > Blocked 일 때만
+        proc->curIOburst = getRandom(proc->getIOburst()); // transition 3 : Running > Blocked 일 때만
+        proc->IOtime += proc->curIOburst;
     }
     proc->curCPUburst = 0;
     proc->timeInPrevState = timeInPrevState;
@@ -190,6 +193,36 @@ void handleTransToDone(Event* evt) {
     proc->curRemainingTime = 0;
     callScheduler = true;
     currentRunningProcess = nullptr;
+}
+
+void printStatistics(string schedAlgo) {
+    // TODO CPUwaitingTime, IOUtil
+    cout << schedAlgo << endl;
+
+    int finishTime = -1;
+    int timeCPUbusy = 0;
+    int timeIObusy = 0;
+    double totalTurnaroundTime = 0;
+
+    for (deque<Process*>::iterator iter = results.begin(); iter != results.end(); iter++) {
+        if (finishTime < (*iter)->finishingTime) {
+            finishTime = (*iter)->finishingTime;
+        }
+        timeCPUbusy += (*iter)->getTotalCPUtime();
+        totalTurnaroundTime += ((*iter)->finishingTime - (*iter)->getArrivalTime());
+        printf("%04d: %4d %4d %4d %4d %1d | %5d %5d %5d %5d\n",
+               (*iter)->getPID(), (*iter)->getArrivalTime(), (*iter)->getTotalCPUtime(), (*iter)->getCPUburst(), (*iter)->getIOburst(), (*iter)->staticPriority,
+               (*iter)->finishingTime, (*iter)->finishingTime - (*iter)->getArrivalTime(), (*iter)->IOtime, (*iter)->CPUwaitingTime);
+    }
+
+    // calculate
+    double cpuUtil = 100.0 * (timeCPUbusy / (double) finishTime);
+    //double IOutil = 100.0 * ()
+    double aveTurnaroundTime = totalTurnaroundTime / results.size();
+    double throughput = 100.0 * (results.size() / (double) finishTime);
+
+    printf("SUM: %d %.2lf %.2lf %.2lf %.2lf %.3lf\n",
+           finishTime, cpuUtil, 0.0, aveTurnaroundTime, 0.0, throughput);
 }
 
 void printVerbose(int currentTime, Event* evt) {
@@ -241,7 +274,7 @@ void initEventQueue(string fileName) {
         Event* evt = new Event(parsed[0], p, TRANS_TO_READY, STATE_CREATED, STATE_READY);
         evtQueue->putEvent(evt);
 
-        results.push(p);
+        results.push_back(p);
     }
     input.close();
 }
