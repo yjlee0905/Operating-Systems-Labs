@@ -29,7 +29,7 @@ vector<int> randomNums; // max : 4611686018427387903(built as 64-bit target), 10
 int ofs = 0;
 
 // scheduler
-Scheduler* scheduler = new SRTFsched();
+Scheduler* scheduler = new SRTFsched(MAX_QUANTUM);
 bool callScheduler = false;
 Process* currentRunningProcess = nullptr;
 

@@ -10,6 +10,7 @@
 using namespace std;
 
 const int DEFAULT_MAX_PRIO = 4;
+const int MAX_QUANTUM = 10000;
 
 typedef enum {
     STATE_CREATED,

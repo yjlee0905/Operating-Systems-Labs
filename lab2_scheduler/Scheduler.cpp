@@ -7,14 +7,14 @@
 
 using namespace std;
 
-Scheduler::Scheduler(){}
+Scheduler::Scheduler(int quantum){}
 
 void Scheduler::addProcess(Process *p) {}
 Process* Scheduler::getNextProcess(){}
 int Scheduler::getProcessCount(){}
 void Scheduler::showShedulerStatus(){}
 
-FCFSsched::FCFSsched(){}
+FCFSsched::FCFSsched(int quantum) : Scheduler(quantum) {}
 
 void FCFSsched::addProcess(Process* process){
     runQ.push_back(process);
@@ -44,7 +44,7 @@ void FCFSsched::showShedulerStatus(){
 }
 
 
-LCFSsched::LCFSsched(){}
+LCFSsched::LCFSsched(int quantum) : Scheduler(quantum) {}
 
 void LCFSsched::addProcess(Process* process){
     runQ.push_back(process);
@@ -74,7 +74,7 @@ void LCFSsched::showShedulerStatus(){
 }
 
 
-SRTFsched::SRTFsched(){}
+SRTFsched::SRTFsched(int quantum) : Scheduler(quantum) {}
 
 void SRTFsched::addProcess(Process* p){
 

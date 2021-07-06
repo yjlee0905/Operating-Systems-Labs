@@ -11,10 +11,12 @@
 using namespace std;
 
 class Scheduler {
+private:
+    int quantum;
 public:
     deque<Process*> runQ;
 
-    Scheduler();
+    Scheduler(int quantum);
     virtual void addProcess(Process* p);
     virtual Process* getNextProcess();
     // virtual void testPreempt(Process* p, int curTime); TODO
@@ -24,10 +26,12 @@ public:
 };
 
 class FCFSsched : public Scheduler {
+private:
+    int quantum;
 public:
     deque<Process*> runQ;
 
-    FCFSsched();
+    FCFSsched(int quantum);
     void addProcess(Process* p);
     Process* getNextProcess();
     // for debug
@@ -36,10 +40,12 @@ public:
 };
 
 class LCFSsched : public Scheduler {
+private:
+    int quantum;
 public:
     deque<Process*> runQ;
 
-    LCFSsched();
+    LCFSsched(int quantum);
     void addProcess(Process* p);
     Process* getNextProcess();
     // for debug
@@ -48,10 +54,12 @@ public:
 };
 
 class SRTFsched : public Scheduler {
+private:
+    int quantum;
 public:
     deque<Process*> runQ;
 
-    SRTFsched();
+    SRTFsched(int quantum);
     void addProcess(Process* p);
     Process* getNextProcess();
     // for debug
