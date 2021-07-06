@@ -72,3 +72,44 @@ void LCFSsched::showShedulerStatus(){
     }
     cout << endl;
 }
+
+
+SRTFsched::SRTFsched(){}
+
+void SRTFsched::addProcess(Process* p){
+
+    int size = runQ.size();
+    for (deque<Process*>::iterator iter = runQ.begin(); iter != runQ.end(); iter++) {
+        if (p->curRemainingTime < (*iter)->curRemainingTime) {
+            runQ.insert(iter, p);
+            break;
+        }
+    }
+
+    if (runQ.size() == size) {
+        runQ.push_back(p);
+    }
+}
+
+Process* SRTFsched::getNextProcess(){
+    Process* p;
+    if (!runQ.empty()){
+        p = runQ.front();
+        runQ.pop_front();
+        return p;
+    } else {
+        return nullptr;
+    }
+}
+
+int SRTFsched::getProcessCount() {
+    return runQ.size();
+}
+
+void SRTFsched::showShedulerStatus(){
+    cout << "SCHED (" << runQ.size() << "): ";
+    for (int i=0; i<runQ.size(); i++) {
+        cout << " "<< runQ.at(i)->getPID() << ":" << runQ.at(i)->stateTs;
+    }
+    cout << endl;
+}

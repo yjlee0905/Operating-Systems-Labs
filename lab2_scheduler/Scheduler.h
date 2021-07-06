@@ -10,7 +10,7 @@
 
 using namespace std;
 
-class Scheduler{
+class Scheduler {
 public:
     deque<Process*> runQ;
 
@@ -23,7 +23,7 @@ public:
     virtual void showShedulerStatus();
 };
 
-class FCFSsched : public Scheduler{
+class FCFSsched : public Scheduler {
 public:
     deque<Process*> runQ;
 
@@ -35,7 +35,7 @@ public:
     void showShedulerStatus();
 };
 
-class LCFSsched : public Scheduler{
+class LCFSsched : public Scheduler {
 public:
     deque<Process*> runQ;
 
@@ -47,4 +47,16 @@ public:
     void showShedulerStatus();
 };
 
+class SRTFsched : public Scheduler {
+public:
+    deque<Process*> runQ;
+
+    SRTFsched();
+    void addProcess(Process* p);
+    Process* getNextProcess();
+    // for debug
+    int getProcessCount();
+    void showShedulerStatus();
+
+};
 #endif //OPERATING_SYSTEMS_LABS_SCHEDULER_H
