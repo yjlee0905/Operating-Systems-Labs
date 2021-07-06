@@ -10,11 +10,8 @@ using namespace std;
 Scheduler::Scheduler(){}
 
 void Scheduler::addProcess(Process *p) {}
-
 Process* Scheduler::getNextProcess(){}
-
 int Scheduler::getProcessCount(){}
-
 void Scheduler::showShedulerStatus(){}
 
 FCFSsched::FCFSsched(){}
@@ -38,8 +35,37 @@ int FCFSsched::getProcessCount() {
     return runQ.size();
 }
 
-
 void FCFSsched::showShedulerStatus(){
+    cout << "SCHED (" << runQ.size() << "): ";
+    for (int i=0; i<runQ.size(); i++) {
+        cout << " "<< runQ.at(i)->getPID() << ":" << runQ.at(i)->stateTs;
+    }
+    cout << endl;
+}
+
+
+LCFSsched::LCFSsched(){}
+
+void LCFSsched::addProcess(Process* process){
+    runQ.push_back(process);
+}
+
+Process* LCFSsched::getNextProcess(){
+    Process* p;
+    if (!runQ.empty()){
+        p = runQ.back();
+        runQ.pop_back();
+        return p;
+    } else {
+        return nullptr;
+    }
+}
+
+int LCFSsched::getProcessCount() {
+    return runQ.size();
+}
+
+void LCFSsched::showShedulerStatus(){
     cout << "SCHED (" << runQ.size() << "): ";
     for (int i=0; i<runQ.size(); i++) {
         cout << " "<< runQ.at(i)->getPID() << ":" << runQ.at(i)->stateTs;

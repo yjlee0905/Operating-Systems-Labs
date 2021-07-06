@@ -35,4 +35,16 @@ public:
     void showShedulerStatus();
 };
 
+class LCFSsched : public Scheduler{
+public:
+    deque<Process*> runQ;
+
+    LCFSsched();
+    void addProcess(Process* p);
+    Process* getNextProcess();
+    // for debug
+    int getProcessCount();
+    void showShedulerStatus();
+};
+
 #endif //OPERATING_SYSTEMS_LABS_SCHEDULER_H
