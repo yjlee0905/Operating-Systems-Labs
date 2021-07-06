@@ -31,12 +31,12 @@ vector<int> randomNums; // max : 4611686018427387903(built as 64-bit target), 10
 int ofs = 0;
 
 // scheduler
-Scheduler* scheduler = new RRsched(5);
+Scheduler* scheduler = new RRsched(2);
 bool callScheduler = false;
 Process* currentRunningProcess = nullptr;
 
 int main() {
-    string inputFileName = "/Users/yjeonlee/Desktop/Operating_Systems/Operating-Systems-Labs/lab2_scheduler/inputs/input6";
+    string inputFileName = "/Users/yjeonlee/Desktop/Operating_Systems/Operating-Systems-Labs/lab2_scheduler/inputs/input0";
     string rFileName = "/Users/yjeonlee/Desktop/Operating_Systems/Operating-Systems-Labs/lab2_scheduler/rfile";
 
     readRandomNums(rFileName);
@@ -114,6 +114,9 @@ void handleTransToReady(Event* evt) {
     //proc->curRemainingTime
     proc->timeInPrevState = timeInPrevState;
     proc->stateTs = currentTime;
+    if (evt->oldState == STATE_READY) {
+        proc->CPUwaitingTime += proc->timeInPrevState;
+    }
 
 //    Event* newEvt = new Event(currentTime, proc, TRANS_TO_RUN, STATE_READY, STATE_RUNNING);
 //    evtQueue->putEvent(newEvt);
@@ -141,6 +144,9 @@ void handleTransToRun(Event* evt) {
     proc->curIOburst = 0;
     proc->timeInPrevState = timeInPrevState;
     proc->stateTs = currentTime;
+    if (evt->oldState == STATE_READY) {
+        proc->CPUwaitingTime += proc->timeInPrevState;
+    }
 
     int evtTimestamp;
     Event* e;
@@ -175,6 +181,9 @@ void handleTransToBlock(Event* evt) {
     proc->timeInPrevState = timeInPrevState;
     proc->curRemainingTime = proc->curRemainingTime - proc->timeInPrevState;
     proc->stateTs = currentTime;
+    if (evt->oldState == STATE_READY) {
+        proc->CPUwaitingTime += proc->timeInPrevState;
+    }
 
     Event *e = new Event(currentTime + proc->curIOburst, proc, TRANS_TO_READY, proc->processState, STATE_READY);
     evtQueue->putEvent(e);
@@ -193,6 +202,9 @@ void handleTransToPreempt(Event* evt) {
     proc->curCPUburst -= scheduler->getQuantum();
     proc->curRemainingTime -= scheduler->getQuantum();
     proc->stateTs = currentTime;
+    if (evt->oldState == STATE_READY) {
+        proc->CPUwaitingTime += proc->timeInPrevState;
+    }
     scheduler->addProcess(proc);
 
     callScheduler = true;
@@ -211,6 +223,9 @@ void handleTransToDone(Event* evt) {
     proc->timeInPrevState = timeInPrevState;
     proc->finishingTime = currentTime;
     proc->curRemainingTime = 0;
+    if (evt->oldState == STATE_READY) {
+        proc->CPUwaitingTime += proc->timeInPrevState;
+    }
     callScheduler = true;
     currentRunningProcess = nullptr;
 }
@@ -223,6 +238,7 @@ void printStatistics(string schedAlgo) {
     int timeCPUbusy = 0;
     int timeIObusy = 0;
     double totalTurnaroundTime = 0;
+    double totalCPUwaitTime = 0;
 
     for (deque<Process*>::iterator iter = results.begin(); iter != results.end(); iter++) {
         if (finishTime < (*iter)->finishingTime) {
@@ -230,6 +246,7 @@ void printStatistics(string schedAlgo) {
         }
         timeCPUbusy += (*iter)->getTotalCPUtime();
         totalTurnaroundTime += ((*iter)->finishingTime - (*iter)->getArrivalTime());
+        totalCPUwaitTime += ((*iter)->CPUwaitingTime);
         printf("%04d: %4d %4d %4d %4d %1d | %5d %5d %5d %5d\n",
                (*iter)->getPID(), (*iter)->getArrivalTime(), (*iter)->getTotalCPUtime(), (*iter)->getCPUburst(), (*iter)->getIOburst(), (*iter)->staticPriority,
                (*iter)->finishingTime, (*iter)->finishingTime - (*iter)->getArrivalTime(), (*iter)->IOtime, (*iter)->CPUwaitingTime);
@@ -238,11 +255,12 @@ void printStatistics(string schedAlgo) {
     // calculate
     double cpuUtil = 100.0 * (timeCPUbusy / (double) finishTime);
     //double IOutil = 100.0 * ()
-    double aveTurnaroundTime = totalTurnaroundTime / results.size();
+    double avgTurnaroundTime = totalTurnaroundTime / results.size();
+    double avgWaitTime = totalCPUwaitTime / results.size();
     double throughput = 100.0 * (results.size() / (double) finishTime);
 
     printf("SUM: %d %.2lf %.2lf %.2lf %.2lf %.3lf\n",
-           finishTime, cpuUtil, 0.0, aveTurnaroundTime, 0.0, throughput);
+           finishTime, cpuUtil, 0.0, avgTurnaroundTime, avgWaitTime, throughput);
 }
 
 void printVerbose(int currentTime, Event* evt) {
