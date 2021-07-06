@@ -7,6 +7,7 @@
 #include <vector>
 #include <queue>
 #include <string>
+#include <string.h>
 #include "Process.h"
 #include "Event.h"
 #include "Scheduler.h"
