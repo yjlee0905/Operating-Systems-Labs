@@ -7,14 +7,19 @@
 
 using namespace std;
 
-Scheduler::Scheduler(int quantum){}
+Scheduler::Scheduler(int quantum){
+    this->quantum = quantum;
+}
 
 void Scheduler::addProcess(Process *p) {}
 Process* Scheduler::getNextProcess(){}
+int Scheduler::getQuantum(){}
 int Scheduler::getProcessCount(){}
-void Scheduler::showShedulerStatus(){}
+void Scheduler::showSchedulerStatus(){}
 
-FCFSsched::FCFSsched(int quantum) : Scheduler(quantum) {}
+FCFSsched::FCFSsched(int quantum) : Scheduler(quantum) {
+    this->quantum = quantum;
+}
 
 void FCFSsched::addProcess(Process* process){
     runQ.push_back(process);
@@ -31,11 +36,13 @@ Process* FCFSsched::getNextProcess(){
     }
 }
 
+int FCFSsched::getQuantum(){return quantum;}
+
 int FCFSsched::getProcessCount() {
     return runQ.size();
 }
 
-void FCFSsched::showShedulerStatus(){
+void FCFSsched::showSchedulerStatus(){
     cout << "SCHED (" << runQ.size() << "): ";
     for (int i=0; i<runQ.size(); i++) {
         cout << " "<< runQ.at(i)->getPID() << ":" << runQ.at(i)->stateTs;
@@ -44,7 +51,9 @@ void FCFSsched::showShedulerStatus(){
 }
 
 
-LCFSsched::LCFSsched(int quantum) : Scheduler(quantum) {}
+LCFSsched::LCFSsched(int quantum) : Scheduler(quantum) {
+    this->quantum = quantum;
+}
 
 void LCFSsched::addProcess(Process* process){
     runQ.push_back(process);
@@ -61,11 +70,13 @@ Process* LCFSsched::getNextProcess(){
     }
 }
 
+int LCFSsched::getQuantum(){return quantum;}
+
 int LCFSsched::getProcessCount() {
     return runQ.size();
 }
 
-void LCFSsched::showShedulerStatus(){
+void LCFSsched::showSchedulerStatus(){
     cout << "SCHED (" << runQ.size() << "): ";
     for (int i=0; i<runQ.size(); i++) {
         cout << " "<< runQ.at(i)->getPID() << ":" << runQ.at(i)->stateTs;
@@ -74,7 +85,9 @@ void LCFSsched::showShedulerStatus(){
 }
 
 
-SRTFsched::SRTFsched(int quantum) : Scheduler(quantum) {}
+SRTFsched::SRTFsched(int quantum) : Scheduler(quantum) {
+    this->quantum = quantum;
+}
 
 void SRTFsched::addProcess(Process* p){
 
@@ -102,11 +115,47 @@ Process* SRTFsched::getNextProcess(){
     }
 }
 
+int SRTFsched::getQuantum(){return quantum;}
+
 int SRTFsched::getProcessCount() {
     return runQ.size();
 }
 
-void SRTFsched::showShedulerStatus(){
+void SRTFsched::showSchedulerStatus(){
+    cout << "SCHED (" << runQ.size() << "): ";
+    for (int i=0; i<runQ.size(); i++) {
+        cout << " "<< runQ.at(i)->getPID() << ":" << runQ.at(i)->stateTs;
+    }
+    cout << endl;
+}
+
+
+RRsched::RRsched(int quantum) : Scheduler(quantum) {
+    this->quantum = quantum;
+}
+
+void RRsched::addProcess(Process* p){
+    runQ.push_back(p);
+}
+
+Process* RRsched::getNextProcess(){
+    Process* p;
+    if (!runQ.empty()){
+        p = runQ.front();
+        runQ.pop_front();
+        return p;
+    } else {
+        return nullptr;
+    }
+}
+
+int RRsched::getQuantum(){return quantum;}
+
+int RRsched::getProcessCount() {
+    return runQ.size();
+}
+
+void RRsched::showSchedulerStatus(){
     cout << "SCHED (" << runQ.size() << "): ";
     for (int i=0; i<runQ.size(); i++) {
         cout << " "<< runQ.at(i)->getPID() << ":" << runQ.at(i)->stateTs;

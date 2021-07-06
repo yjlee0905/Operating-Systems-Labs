@@ -20,9 +20,11 @@ public:
     virtual void addProcess(Process* p);
     virtual Process* getNextProcess();
     // virtual void testPreempt(Process* p, int curTime); TODO
+    // access private data member
+    virtual int getQuantum();
     // for debug
     virtual int getProcessCount();
-    virtual void showShedulerStatus();
+    virtual void showSchedulerStatus();
 };
 
 class FCFSsched : public Scheduler {
@@ -34,9 +36,11 @@ public:
     FCFSsched(int quantum);
     void addProcess(Process* p);
     Process* getNextProcess();
+    // access private data member
+    int getQuantum();
     // for debug
     int getProcessCount();
-    void showShedulerStatus();
+    void showSchedulerStatus();
 };
 
 class LCFSsched : public Scheduler {
@@ -48,9 +52,11 @@ public:
     LCFSsched(int quantum);
     void addProcess(Process* p);
     Process* getNextProcess();
+    // access private data member
+    int getQuantum();
     // for debug
     int getProcessCount();
-    void showShedulerStatus();
+    void showSchedulerStatus();
 };
 
 class SRTFsched : public Scheduler {
@@ -62,9 +68,27 @@ public:
     SRTFsched(int quantum);
     void addProcess(Process* p);
     Process* getNextProcess();
+    // access private data member
+    int getQuantum();
     // for debug
     int getProcessCount();
-    void showShedulerStatus();
+    void showSchedulerStatus();
 
+};
+
+class RRsched : public Scheduler {
+private:
+    int quantum;
+public:
+    deque<Process*> runQ;
+
+    RRsched(int quantum);
+    void addProcess(Process* p);
+    Process* getNextProcess();
+    // access private data member
+    int getQuantum();
+    // for debug
+    int getProcessCount();
+    void showSchedulerStatus();
 };
 #endif //OPERATING_SYSTEMS_LABS_SCHEDULER_H
