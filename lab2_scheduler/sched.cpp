@@ -199,6 +199,8 @@ void handleTransToPreempt(Event* evt) {
     // prevState: Running
     // nextState: Ready
 
+    proc->processState = STATE_READY; // TODO check only in RR?
+    proc->timeInPrevState = timeInPrevState;
     proc->curCPUburst -= scheduler->getQuantum();
     proc->curRemainingTime -= scheduler->getQuantum();
     proc->stateTs = currentTime;
