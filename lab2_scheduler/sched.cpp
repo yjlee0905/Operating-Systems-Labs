@@ -31,12 +31,18 @@ vector<int> randomNums; // max : 4611686018427387903(built as 64-bit target), 10
 int ofs = 0;
 
 // scheduler
-Scheduler* scheduler = new RRsched(2);
+Scheduler* scheduler = new RRsched(5);
 bool callScheduler = false;
 Process* currentRunningProcess = nullptr;
 
+// IO utilization
+int timeIObusy = 0;
+int startIOtime = 0;
+int finishIOtime = 0;
+bool isDoingIO = false;
+
 int main() {
-    string inputFileName = "/Users/yjeonlee/Desktop/Operating_Systems/Operating-Systems-Labs/lab2_scheduler/inputs/input0";
+    string inputFileName = "/Users/yjeonlee/Desktop/Operating_Systems/Operating-Systems-Labs/lab2_scheduler/inputs/input6";
     string rFileName = "/Users/yjeonlee/Desktop/Operating_Systems/Operating-Systems-Labs/lab2_scheduler/rfile";
 
     readRandomNums(rFileName);
@@ -185,6 +191,20 @@ void handleTransToBlock(Event* evt) {
         proc->CPUwaitingTime += proc->timeInPrevState;
     }
 
+    if (isDoingIO && (currentTime> finishIOtime)) {
+        timeIObusy += (finishIOtime - startIOtime);
+        isDoingIO = false;
+    } else if (currentTime + proc->curIOburst > finishIOtime) {
+        finishIOtime = currentTime + proc->curIOburst;
+    }
+
+    if (!isDoingIO) {
+        startIOtime = currentTime;
+        finishIOtime = currentTime + proc->curIOburst;
+        //timeIObusy += proc->curIOburst;
+        isDoingIO = true;
+    }
+
     Event *e = new Event(currentTime + proc->curIOburst, proc, TRANS_TO_READY, proc->processState, STATE_READY);
     evtQueue->putEvent(e);
 
@@ -238,7 +258,6 @@ void printStatistics(string schedAlgo) {
 
     int finishTime = -1;
     int timeCPUbusy = 0;
-    int timeIObusy = 0;
     double totalTurnaroundTime = 0;
     double totalCPUwaitTime = 0;
 
@@ -256,13 +275,14 @@ void printStatistics(string schedAlgo) {
 
     // calculate
     double cpuUtil = 100.0 * (timeCPUbusy / (double) finishTime);
-    //double IOutil = 100.0 * ()
+    timeIObusy += (finishIOtime - startIOtime);
+    double IOutil = 100.0 * (timeIObusy / (double) finishTime);
     double avgTurnaroundTime = totalTurnaroundTime / results.size();
     double avgWaitTime = totalCPUwaitTime / results.size();
     double throughput = 100.0 * (results.size() / (double) finishTime);
 
     printf("SUM: %d %.2lf %.2lf %.2lf %.2lf %.3lf\n",
-           finishTime, cpuUtil, 0.0, avgTurnaroundTime, avgWaitTime, throughput);
+           finishTime, cpuUtil, IOutil, avgTurnaroundTime, avgWaitTime, throughput);
 }
 
 void printVerbose(int currentTime, Event* evt) {
