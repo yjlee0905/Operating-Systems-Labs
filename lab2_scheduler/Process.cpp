@@ -16,6 +16,8 @@ Process::Process(int pid, int arrivalTime, int totalCPUtime, int CPUburst, int I
     this->CPUwaitingTime = 0;
 
     this->processState = STATE_CREATED;
+    this->isExpired = false;
+    this->prevState = STATE_CREATED;
     this->staticPriority = priority;
     this->dynamicPriority = priority-1; // TODO check
 

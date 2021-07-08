@@ -91,4 +91,30 @@ public:
     int getProcessCount();
     void showSchedulerStatus();
 };
+
+class PRIOsched : public Scheduler {
+private:
+    int quantum;
+    int maxPrios;
+
+    bool isMLQempty(deque<Process*> *q);
+public:
+//    deque<Process*> *activeQ = static_cast<deque<struct Process *> *>(calloc(sizeof(deque<Process *>),
+//                                                                             maxPrios));
+//    deque<Process*> *expiredQ = static_cast<deque<struct Process *> *>(calloc(sizeof(deque<Process *>),
+//                                                                              maxPrios));
+    deque<Process*> *activeQ;
+    deque<Process*> *expiredQ;
+
+    //PRIOsched(int quantum);
+    PRIOsched(int quantum, int maxPrios);
+
+    void addProcess(Process* p);
+    Process* getNextProcess();
+    // access private data member
+    int getQuantum();
+    // for debug
+    int getProcessCount();
+    void showSchedulerStatus();
+};
 #endif //OPERATING_SYSTEMS_LABS_SCHEDULER_H

@@ -31,7 +31,7 @@ vector<int> randomNums; // max : 4611686018427387903(built as 64-bit target), 10
 int ofs = 0;
 
 // scheduler
-Scheduler* scheduler = new RRsched(5);
+Scheduler* scheduler = new PRIOsched(5, 3);
 bool callScheduler = false;
 Process* currentRunningProcess = nullptr;
 
@@ -42,7 +42,7 @@ int finishIOtime = 0;
 bool isDoingIO = false;
 
 int main() {
-    string inputFileName = "/Users/yjeonlee/Desktop/Operating_Systems/Operating-Systems-Labs/lab2_scheduler/inputs/input6";
+    string inputFileName = "/Users/yjeonlee/Desktop/Operating_Systems/Operating-Systems-Labs/lab2_scheduler/inputs/input2";
     string rFileName = "/Users/yjeonlee/Desktop/Operating_Systems/Operating-Systems-Labs/lab2_scheduler/rfile";
 
     readRandomNums(rFileName);
@@ -113,7 +113,12 @@ void handleTransToReady(Event* evt) {
     // prevState: Created, Running, Blocked, + Preempted
     // nextState: Running
 
+    // All: When a process returns from I/O tis dynamic priority is reset to (staticPriority-1)
+    if (proc->processState == STATE_BLOCKED) {
+        proc->dynamicPriority = proc->staticPriority - 1;
+    }
     // Ready state
+    proc->prevState = proc->processState;
     proc->processState = STATE_READY;
     //proc->curCPUburst = 0;
     proc->curIOburst = 0;
@@ -138,12 +143,26 @@ void handleTransToRun(Event* evt) {
 
     // prevState: Ready
     // nextState: Ready, Blocked, Done
-
+    proc->prevState = proc->processState;
     proc->processState = STATE_RUNNING;
     if ((evt->oldState == STATE_READY) && (proc->curCPUburst == 0)) {
         proc->curCPUburst = getRandom(proc->getCPUburst()); // transition 2: Read > Running 일 때만
         if (proc->curCPUburst > proc->curRemainingTime) {
             proc->curCPUburst = proc->curRemainingTime;
+        }
+        proc->dynamicPriority = proc->staticPriority - 1;
+        proc->isExpired = false;
+    } else {
+        proc->dynamicPriority--;
+
+        if (proc->dynamicPriority <= -1) {
+            proc->dynamicPriority = proc->staticPriority-1;
+            proc->isExpired = true;
+            // TODO check dynamicPriority range : [0 - staticPriority-1]
+        } else {
+            // TODO check dynamicPriority range
+            //p->dynamicPriority--;
+            proc->isExpired = false;
         }
     }
     //proc->curRemainingTime = proc->curRemainingTime - proc->curCPUburst;
@@ -157,6 +176,7 @@ void handleTransToRun(Event* evt) {
     int evtTimestamp;
     Event* e;
     if (scheduler->getQuantum() < proc->curCPUburst) {
+        //proc->dynamicPriority--;
         evtTimestamp = currentTime + scheduler->getQuantum();
         e = new Event(evtTimestamp, proc, TRANS_TO_PREEMPT, proc->processState, STATE_READY);
     } else {
@@ -178,6 +198,7 @@ void handleTransToBlock(Event* evt) {
     // prevState: Running
     // nextState: Ready
 
+    proc->prevState = proc->processState;
     proc->processState = STATE_BLOCKED;
     if (evt->oldState == STATE_RUNNING) {
         proc->curIOburst = getRandom(proc->getIOburst()); // transition 3 : Running > Blocked 일 때만
@@ -219,6 +240,7 @@ void handleTransToPreempt(Event* evt) {
     // prevState: Running
     // nextState: Ready
 
+    proc->prevState = proc->processState;
     proc->processState = STATE_READY; // TODO check only in RR?
     proc->timeInPrevState = timeInPrevState;
     proc->curCPUburst -= scheduler->getQuantum();
@@ -241,6 +263,7 @@ void handleTransToDone(Event* evt) {
     // prevState: Running
     // nextState: X
 
+    proc->prevState = proc->processState;
     proc->processState = STATE_DONE;
     proc->timeInPrevState = timeInPrevState;
     proc->finishingTime = currentTime;
@@ -335,7 +358,8 @@ void initEventQueue(string fileName) {
             parsed[i++] = atoi(ptr);
             ptr = strtok(NULL, delim);
         }
-        Process* p = new Process(pid++, parsed[0], parsed[1], parsed[2], parsed[3], getRandom(DEFAULT_MAX_PRIO));
+        // TODO get maxprios
+        Process* p = new Process(pid++, parsed[0], parsed[1], parsed[2], parsed[3], getRandom(3));
         Event* evt = new Event(parsed[0], p, TRANS_TO_READY, STATE_CREATED, STATE_READY);
         evtQueue->putEvent(evt);
 

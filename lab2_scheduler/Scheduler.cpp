@@ -162,3 +162,94 @@ void RRsched::showSchedulerStatus(){
     }
     cout << endl;
 }
+
+
+PRIOsched::PRIOsched(int quantum, int maxPrios) : Scheduler(quantum) {
+    this->quantum = quantum;
+    this->maxPrios = maxPrios;
+
+    this->activeQ = new deque<Process*>[maxPrios];
+    this->expiredQ = new deque<Process*>[maxPrios];
+}
+
+void PRIOsched::addProcess(Process* p){
+    // 여기서 dynamicPriority set
+//    if (p->prevState == STATE_BLOCKED) {
+//        p->dynamicPriority = p->staticPriority - 1;
+//        //cout << "stat - 1" << endl;
+//    } else if (p->prevState == STATE_RUNNING) {
+//        //cout << "dp--" << endl;
+//        p->dynamicPriority--;
+//    }
+
+    if (p->isExpired) {
+        //p->dynamicPriority = p->staticPriority-1;
+        // TODO check dynamicPriority range : [0 - staticPriority-1]
+        (expiredQ+(p->dynamicPriority))->push_back(p);
+        //cout<<"expiredQ success" << endl;
+
+    } else {
+        // TODO check dynamicPriority range
+        //p->dynamicPriority--;
+        (activeQ+(p->dynamicPriority))->push_back(p);
+    }
+}
+
+Process* PRIOsched::getNextProcess(){
+    //cout << "in next process" << endl;
+    Process* p = nullptr;
+    if (isMLQempty(activeQ)) {
+        if (!isMLQempty(expiredQ)) {
+            // flip activeQ and expiredQ
+            deque<Process*> *tmp = activeQ;
+            activeQ = expiredQ;
+            expiredQ = tmp;
+
+        } else {
+            return nullptr;
+        }
+    }
+
+    for (int i=maxPrios-1; i>=0; i--) {
+        if (!(activeQ+i)->empty()) {
+            p = (activeQ+i)->front();
+            (activeQ+i)->pop_front();
+            break;
+        }
+    }
+
+//    for (int i=0; i<maxPrios; i++) {
+//        if (!(activeQ+i)->empty()) {
+//            //cout << "there: " << endl;
+//            p = (activeQ+i)->front();
+//            //cout << "here: " << p->staticPriority << endl;
+//            (activeQ+i)->pop_front();
+//            break;
+//        }
+//    }
+    return p;
+}
+
+int PRIOsched::getQuantum(){return quantum;}
+
+int PRIOsched::getProcessCount() {
+    return -1;
+}
+
+void PRIOsched::showSchedulerStatus(){
+//    cout << "SCHED (" << runQ.size() << "): ";
+//    for (int i=0; i<runQ.size(); i++) {
+//        cout << " "<< runQ.at(i)->getPID() << ":" << runQ.at(i)->stateTs;
+//    }
+//    cout << endl;
+    cout << "test" << endl;
+}
+
+bool PRIOsched::isMLQempty(deque<Process *> *q) {
+    for (int i=0; i<maxPrios; i++) {
+        if (!(q+i)->empty()) {
+            return false;
+        }
+    }
+    return true;
+}

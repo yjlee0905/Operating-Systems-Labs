@@ -16,6 +16,8 @@ private:
     int IOburst; // IO
 public:
     process_state_t processState;
+    bool isExpired;
+    process_state_t prevState;
     int finishingTime; // FT
     int turnAroundTime; // TT
     int IOtime; // IT
