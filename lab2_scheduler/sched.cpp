@@ -27,8 +27,7 @@ void printVerbose(int currentTime, Event *evt);
 
 EventQueue *evtQueue = new EventQueue(); // TODO 포인터 제거?
 deque<Process *> results;
-vector<int> randomNums; // max : 4611686018427387903(built as 64-bit target),
-// 1073741823(built as 32-bit target)
+vector<int> randomNums; // max : 4611686018427387903(built as 64-bit target), 1073741823(built as 32-bit target)
 int ofs = 0;
 
 // scheduler
@@ -94,27 +93,6 @@ int main() {
                 currentRunningProcess = scheduler->getNextProcess();
                 if (currentRunningProcess == nullptr)
                     continue;
-
-                //                cout << "Call Sched: " << currentTime << " " <<
-                //                tmp->process->getPID() << " " <<
-                //                tmp->process->timeInPrevState << ": "
-                //                     << processStateToString(tmp->oldState) << " -> "
-                //                     << processStateToString(tmp->newState) << endl;
-                //                if (evt->process->processState == STATE_READY) {
-                //                    evt->process->dynamicPriority--;
-                //
-                //                    if (evt->process->dynamicPriority <= -1) {
-                //                        evt->process->dynamicPriority =
-                //                        evt->process->staticPriority-1;
-                //                        evt->process->isExpired = true;
-                //                        // TODO check dynamicPriority range : [0 -
-                //                        staticPriority-1]
-                //                    } else {
-                //                        // TODO check dynamicPriority range
-                //                        //p->dynamicPriority--;
-                //                        evt->process->isExpired = false;
-                //                    }
-                //                }
 
                 // create event to make process runnable for same time.
                 Event *e =
@@ -315,7 +293,6 @@ void handleTransToDone(Event *evt) {
 }
 
 void printStatistics(string schedAlgo) {
-    // TODO CPUwaitingTime, IOUtil
     cout << schedAlgo << endl;
 
     int finishTime = -1;
@@ -451,8 +428,7 @@ void readRandomNums(string fileName) {
     input.close();
 }
 
-// transitions 2 and 3 (with noted exceptions) and the initial assignment of the
-// static priority.
+// transitions 2 and 3 (with noted exceptions) and the initial assignment of the static priority.
 int getRandom(int burst) {
     int num = 1 + (randomNums[ofs++] % burst);
     if (ofs == randomNums.size()) {
