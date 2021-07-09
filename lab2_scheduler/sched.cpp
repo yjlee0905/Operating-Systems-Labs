@@ -31,7 +31,7 @@ vector<int> randomNums; // max : 4611686018427387903(built as 64-bit target), 10
 int ofs = 0;
 
 // scheduler
-Scheduler* scheduler = new RRsched(2);
+Scheduler* scheduler;
 // Scheduler *scheduler = new RRsched(5);
 bool callScheduler = false;
 Process *currentRunningProcess = nullptr;
@@ -48,6 +48,9 @@ int main() {
 
     readRandomNums(rFileName);
     initEventQueue(inputFileName);
+
+    // scheduler will be initialized here.
+    scheduler = new PREPRIOsched(5, 3);
 
     // simulation
     while (!evtQueue->eventQ.empty()) {
@@ -131,10 +134,14 @@ void handleTransToReady(Event *evt) {
         proc->CPUwaitingTime += proc->timeInPrevState;
     }
 
-    //    Event* newEvt = new Event(currentTime, proc, TRANS_TO_RUN, STATE_READY,
-    //    STATE_RUNNING); evtQueue->putEvent(newEvt);
-
     scheduler->addProcess(proc);
+
+    // call
+    if (scheduler->shouldPreempt()) {
+        // if botth condidionts are true, then create preemption evt for current running process
+        // at current time
+
+    }
     callScheduler = true;
 }
 
@@ -398,7 +405,7 @@ void initEventQueue(string fileName) {
         }
         // TODO get maxprios
         Process *p = new Process(pid++, parsed[0], parsed[1], parsed[2], parsed[3],
-                                 getRandom(DEFAULT_MAX_PRIO));
+                                 getRandom(3));
         Event *evt =
                 new Event(parsed[0], p, TRANS_TO_READY, STATE_CREATED, STATE_READY);
         evtQueue->putEvent(evt);

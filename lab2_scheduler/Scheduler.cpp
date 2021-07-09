@@ -11,11 +11,9 @@ Scheduler::Scheduler(int quantum){
     this->quantum = quantum;
 }
 
-void Scheduler::addProcess(Process *p) {}
-Process* Scheduler::getNextProcess(){}
-int Scheduler::getQuantum(){}
-int Scheduler::getProcessCount(){}
-void Scheduler::showSchedulerStatus(){}
+bool Scheduler::shouldPreempt() {
+    return false;
+}
 
 FCFSsched::FCFSsched(int quantum) : Scheduler(quantum) {
     this->quantum = quantum;
@@ -168,18 +166,23 @@ PRIOsched::PRIOsched(int quantum, int maxPrios) : Scheduler(quantum) {
     this->quantum = quantum;
     this->maxPrios = maxPrios;
 
-    this->activeQ = new deque<Process*>[maxPrios];
-    this->expiredQ = new deque<Process*>[maxPrios];
+   // q1 = nullptr;
+   activeQ = q1;
+   expiredQ = q2;
+    //expiredQ = nullptr;
+    //activeQ = new deque<Process*>[4];
+    //expiredQ = new deque<Process*>[maxPrios];
 }
 
 void PRIOsched::addProcess(Process* p){
 
 
     if (p->dynamicPriority >= 0) {
-        (activeQ+(p->dynamicPriority))->push_back(p);
+        //activeQ[0].push_back(p);
+        activeQ[p->dynamicPriority].push_back(p);
     } else {
         p->dynamicPriority = p->staticPriority - 1;
-        (expiredQ+(p->dynamicPriority))->push_back(p);
+        expiredQ[p->dynamicPriority].push_back(p);
     }
 
     // 여기서 dynamicPriority set
@@ -228,55 +231,32 @@ void PRIOsched::addProcess(Process* p){
 Process* PRIOsched::getNextProcess(){
     //cout << "in next process" << endl;
     Process* p = nullptr;
-    if (isMLQempty(activeQ)) {
-        if (!isMLQempty(expiredQ)) {
-            //cout << "switched queue" << endl;
-            // flip activeQ and expiredQ
-            deque<Process*> *tmp = activeQ;
-            activeQ = expiredQ;
-            expiredQ = tmp;
-        } else {
-            return nullptr;
+//    if (isMLQempty(activeQ)) {
+//        if (!isMLQempty(expiredQ)) {
+//            //cout << "switched queue" << endl;
+//            // flip activeQ and expiredQ
+//            deque<Process*> *tmp = activeQ;
+//            activeQ = expiredQ;
+//            expiredQ = tmp;
+//        } else {
+//            return nullptr;
+//        }
+//    }
+
+    for (int j=0; j<2; j++) {
+        for (int i=maxPrios-1; i>=0; i--) {
+            if (!(activeQ+i)->empty()) {
+                p = (activeQ+i)->front();
+                (activeQ+i)->pop_front();
+                return p;
+            }
         }
+        deque<Process*> *tmp = activeQ;
+        activeQ = expiredQ;
+        expiredQ = tmp;
     }
 
-    for (int i=maxPrios-1; i>=0; i--) {
-        if (!(activeQ+i)->empty()) {
-            p = (activeQ+i)->front();
-            (activeQ+i)->pop_front();
-            break;
-        }
-    }
-
-//    cout << "[GET] activeQ: ";
-//    for (int i=0; i<maxPrios; i++) {
-//        cout << "[ ";
-//        for (deque<Process*>::iterator iter = (activeQ+i)->begin(); iter != (activeQ+i)->end(); iter++) {
-//            cout << (*iter)->getPID() <<  ", ";
-//        }
-//        cout << "] ";
-//    }
-//
-//    cout << "          expiredQ: ";
-//    for (int i=0; i<maxPrios; i++) {
-//        cout << "[ ";
-//        for (deque<Process*>::iterator iter = (expiredQ+i)->begin(); iter != (expiredQ+i)->end(); iter++) {
-//            cout << (*iter)->getPID() <<  ", ";
-//        }
-//        cout << "] ";
-//    }
-//    cout << endl;
-
-//    for (int i=0; i<maxPrios; i++) {
-//        if (!(activeQ+i)->empty()) {
-//            //cout << "there: " << endl;
-//            p = (activeQ+i)->front();
-//            //cout << "here: " << p->staticPriority << endl;
-//            (activeQ+i)->pop_front();
-//            break;
-//        }
-//    }
-    return p;
+    return nullptr;
 }
 
 int PRIOsched::getQuantum(){return quantum;}
@@ -300,5 +280,14 @@ bool PRIOsched::isMLQempty(deque<Process *> *q) {
             return false;
         }
     }
+    return true;
+}
+
+PREPRIOsched::PREPRIOsched(int quantum, int maxPrios) : PRIOsched(quantum, maxPrios) {
+
+}
+
+
+bool PREPRIOsched::shouldPreempt() {
     return true;
 }

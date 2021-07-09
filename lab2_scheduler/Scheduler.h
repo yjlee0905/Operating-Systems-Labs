@@ -14,19 +14,21 @@ class Scheduler {
 private:
     int quantum;
 public:
+    // TODO change to private
     deque<Process*> runQ;
     deque<Process*> *activeQ;
     deque<Process*> *expiredQ;
 
     Scheduler(int quantum);
-    virtual void addProcess(Process* p);
-    virtual Process* getNextProcess();
+    virtual void addProcess(Process* p) = 0;
+    virtual Process* getNextProcess() = 0;
     // virtual void testPreempt(Process* p, int curTime); TODO
     // access private data member
-    virtual int getQuantum();
-    // for debug
-    virtual int getProcessCount();
-    virtual void showSchedulerStatus();
+    virtual int getQuantum() = 0;
+    // for debug, TODO remove
+    virtual bool shouldPreempt();
+    virtual int getProcessCount() = 0;
+    virtual void showSchedulerStatus() = 0;
 };
 
 class FCFSsched : public Scheduler {
@@ -95,18 +97,17 @@ public:
 };
 
 class PRIOsched : public Scheduler {
-private:
+protected:
     int quantum;
     int maxPrios;
 
     bool isMLQempty(deque<Process*> *q);
 public:
-//    deque<Process*> *activeQ = static_cast<deque<struct Process *> *>(calloc(sizeof(deque<Process *>),
-//                                                                             maxPrios));
-//    deque<Process*> *expiredQ = static_cast<deque<struct Process *> *>(calloc(sizeof(deque<Process *>),
-//                                                                              maxPrios));
     deque<Process*> *activeQ;
     deque<Process*> *expiredQ;
+    deque<Process*> q1[32];
+    deque<Process*> q2[32];
+
 
     //PRIOsched(int quantum);
     PRIOsched(int quantum, int maxPrios);
@@ -118,5 +119,12 @@ public:
     // for debug
     int getProcessCount();
     void showSchedulerStatus();
+};
+
+class PREPRIOsched : public PRIOsched {
+public:
+    PREPRIOsched(int quantum, int maxPrios);
+    bool shouldPreempt();
+
 };
 #endif //OPERATING_SYSTEMS_LABS_SCHEDULER_H
