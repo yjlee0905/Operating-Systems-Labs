@@ -173,6 +173,15 @@ PRIOsched::PRIOsched(int quantum, int maxPrios) : Scheduler(quantum) {
 }
 
 void PRIOsched::addProcess(Process* p){
+
+
+    if (p->dynamicPriority >= 0) {
+        (activeQ+(p->dynamicPriority))->push_back(p);
+    } else {
+        p->dynamicPriority = p->staticPriority - 1;
+        (expiredQ+(p->dynamicPriority))->push_back(p);
+    }
+
     // 여기서 dynamicPriority set
 //    if (p->prevState == STATE_BLOCKED) {
 //        p->dynamicPriority = p->staticPriority - 1;
@@ -182,17 +191,18 @@ void PRIOsched::addProcess(Process* p){
 //        p->dynamicPriority--;
 //    }
 
-    if (p->isExpired) {
-        //p->dynamicPriority = p->staticPriority-1;
-        // TODO check dynamicPriority range : [0 - staticPriority-1]
-        (expiredQ+(p->dynamicPriority))->push_back(p);
-        //cout<<"expiredQ success" << endl;
 
-    } else {
-        // TODO check dynamicPriority range
-        //p->dynamicPriority--;
-        (activeQ+(p->dynamicPriority))->push_back(p);
-    }
+    // if (p->isExpired) {
+    //     //p->dynamicPriority = p->staticPriority-1;
+    //     // TODO check dynamicPriority range : [0 - staticPriority-1]
+    //     (expiredQ+(p->dynamicPriority))->push_back(p);
+    //     //cout<<"expiredQ success" << endl;
+
+    // } else {
+    //     // TODO check dynamicPriority range
+    //     //p->dynamicPriority--;
+    //     (activeQ+(p->dynamicPriority))->push_back(p);
+    // }
 
 //    cout << "[ADD] activeQ: ";
 //    for (int i=0; i<maxPrios; i++) {
@@ -225,7 +235,6 @@ Process* PRIOsched::getNextProcess(){
             deque<Process*> *tmp = activeQ;
             activeQ = expiredQ;
             expiredQ = tmp;
-
         } else {
             return nullptr;
         }
