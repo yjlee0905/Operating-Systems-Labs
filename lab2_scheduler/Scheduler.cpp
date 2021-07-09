@@ -193,6 +193,26 @@ void PRIOsched::addProcess(Process* p){
         //p->dynamicPriority--;
         (activeQ+(p->dynamicPriority))->push_back(p);
     }
+
+//    cout << "[ADD] activeQ: ";
+//    for (int i=0; i<maxPrios; i++) {
+//        cout << "[ ";
+//        for (deque<Process*>::iterator iter = (activeQ+i)->begin(); iter != (activeQ+i)->end(); iter++) {
+//            cout << (*iter)->getPID() <<  ", ";
+//        }
+//        cout << "] ";
+//    }
+//
+//    cout << "          expiredQ: ";
+//    for (int i=0; i<maxPrios; i++) {
+//        cout << "[ ";
+//        for (deque<Process*>::iterator iter = (expiredQ+i)->begin(); iter != (expiredQ+i)->end(); iter++) {
+//            cout << (*iter)->getPID() <<  ", ";
+//        }
+//        cout << "] ";
+//    }
+//    cout << endl;
+
 }
 
 Process* PRIOsched::getNextProcess(){
@@ -200,6 +220,7 @@ Process* PRIOsched::getNextProcess(){
     Process* p = nullptr;
     if (isMLQempty(activeQ)) {
         if (!isMLQempty(expiredQ)) {
+            //cout << "switched queue" << endl;
             // flip activeQ and expiredQ
             deque<Process*> *tmp = activeQ;
             activeQ = expiredQ;
@@ -217,6 +238,25 @@ Process* PRIOsched::getNextProcess(){
             break;
         }
     }
+
+//    cout << "[GET] activeQ: ";
+//    for (int i=0; i<maxPrios; i++) {
+//        cout << "[ ";
+//        for (deque<Process*>::iterator iter = (activeQ+i)->begin(); iter != (activeQ+i)->end(); iter++) {
+//            cout << (*iter)->getPID() <<  ", ";
+//        }
+//        cout << "] ";
+//    }
+//
+//    cout << "          expiredQ: ";
+//    for (int i=0; i<maxPrios; i++) {
+//        cout << "[ ";
+//        for (deque<Process*>::iterator iter = (expiredQ+i)->begin(); iter != (expiredQ+i)->end(); iter++) {
+//            cout << (*iter)->getPID() <<  ", ";
+//        }
+//        cout << "] ";
+//    }
+//    cout << endl;
 
 //    for (int i=0; i<maxPrios; i++) {
 //        if (!(activeQ+i)->empty()) {

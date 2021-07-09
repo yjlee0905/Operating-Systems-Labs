@@ -42,7 +42,7 @@ int finishIOtime = 0;
 bool isDoingIO = false;
 
 int main() {
-    string inputFileName = "/Users/yjeonlee/Desktop/Operating_Systems/Operating-Systems-Labs/lab2_scheduler/inputs/input2";
+    string inputFileName = "/Users/yjeonlee/Desktop/Operating_Systems/Operating-Systems-Labs/lab2_scheduler/inputs/input3";
     string rFileName = "/Users/yjeonlee/Desktop/Operating_Systems/Operating-Systems-Labs/lab2_scheduler/rfile";
 
     readRandomNums(rFileName);
@@ -94,6 +94,19 @@ int main() {
 
 //                cout << "Call Sched: " << currentTime << " " << tmp->process->getPID() << " " << tmp->process->timeInPrevState << ": "
 //                     << processStateToString(tmp->oldState) << " -> " << processStateToString(tmp->newState) << endl;
+//                if (evt->process->processState == STATE_READY) {
+//                    evt->process->dynamicPriority--;
+//
+//                    if (evt->process->dynamicPriority <= -1) {
+//                        evt->process->dynamicPriority = evt->process->staticPriority-1;
+//                        evt->process->isExpired = true;
+//                        // TODO check dynamicPriority range : [0 - staticPriority-1]
+//                    } else {
+//                        // TODO check dynamicPriority range
+//                        //p->dynamicPriority--;
+//                        evt->process->isExpired = false;
+//                    }
+//                }
 
                 // create event to make process runnable for same time.
                 Event* e = new Event(currentTime, currentRunningProcess, TRANS_TO_RUN, currentRunningProcess->processState, STATE_RUNNING);
@@ -150,9 +163,10 @@ void handleTransToRun(Event* evt) {
         if (proc->curCPUburst > proc->curRemainingTime) {
             proc->curCPUburst = proc->curRemainingTime;
         }
-        proc->dynamicPriority = proc->staticPriority - 1;
-        proc->isExpired = false;
-    } else {
+//        proc->dynamicPriority = proc->staticPriority - 1;
+//        proc->isExpired = false;
+    }
+    //else {
         proc->dynamicPriority--;
 
         if (proc->dynamicPriority <= -1) {
@@ -164,7 +178,7 @@ void handleTransToRun(Event* evt) {
             //p->dynamicPriority--;
             proc->isExpired = false;
         }
-    }
+    //}
     //proc->curRemainingTime = proc->curRemainingTime - proc->curCPUburst;
     proc->curIOburst = 0;
     proc->timeInPrevState = timeInPrevState;
@@ -176,7 +190,17 @@ void handleTransToRun(Event* evt) {
     int evtTimestamp;
     Event* e;
     if (scheduler->getQuantum() < proc->curCPUburst) {
-        //proc->dynamicPriority--;
+//        proc->dynamicPriority--;
+//
+//        if (proc->dynamicPriority <= -1) {
+//            proc->dynamicPriority = proc->staticPriority-1;
+//            proc->isExpired = true;
+//            // TODO check dynamicPriority range : [0 - staticPriority-1]
+//        } else {
+//            // TODO check dynamicPriority range
+//            //p->dynamicPriority--;
+//            proc->isExpired = false;
+//        }
         evtTimestamp = currentTime + scheduler->getQuantum();
         e = new Event(evtTimestamp, proc, TRANS_TO_PREEMPT, proc->processState, STATE_READY);
     } else {

@@ -15,6 +15,8 @@ private:
     int quantum;
 public:
     deque<Process*> runQ;
+    deque<Process*> *activeQ;
+    deque<Process*> *expiredQ;
 
     Scheduler(int quantum);
     virtual void addProcess(Process* p);
