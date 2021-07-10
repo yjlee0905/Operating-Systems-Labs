@@ -44,3 +44,28 @@ int EventQueue::getNextEventTime() {
 
     return eventQ.front()->evtTimeStamp;
 }
+
+int EventQueue::getEventTimeWithProcess(Process *p) {
+    if (p == nullptr) return -1;
+    for (deque<Event*>::iterator iter = eventQ.begin(); iter != eventQ.end(); iter++) {
+        if ((*iter)->process->getPID() == p->getPID()) {
+            return (*iter)->evtTimeStamp;
+        }
+    }
+    return -1;
+}
+
+void EventQueue::removeEvent(Process *p, int currentTime, int quantum) {
+    for (deque<Event*>::iterator iter = eventQ.begin(); iter != eventQ.end(); iter++) {
+        if ((*iter)->process->getPID() == p->getPID()) {
+            //p->curRemainingTime = -100000;
+
+            p->curRemainingTime = (*iter)->process->curRemainingTime - (currentTime - (*iter)->process->stateTs)+quantum;
+            p->curCPUburst = (*iter)->process->curCPUburst - (currentTime - p->stateTs)+quantum;
+            cout << "before erase: " << eventQ.size() << endl;
+            eventQ.erase(iter);
+            cout << "after erase: " << eventQ.size() << endl;
+            break;
+        }
+    }
+}

@@ -50,10 +50,10 @@ int main() {
     initEventQueue(inputFileName);
 
     // scheduler will be initialized here.
-    scheduler = new PREPRIOsched(5, 3);
+    scheduler = new PREPRIOsched(2, 5);
 
     // simulation
-    while (!evtQueue->eventQ.empty()) {
+    while (!evtQueue->eventQ.empty()) { // TODO change to getEvent
         Event *evt = evtQueue->eventQ.front();
         evtQueue->eventQ.pop_front();
 
@@ -122,6 +122,7 @@ void handleTransToReady(Event *evt) {
     if (proc->processState == STATE_BLOCKED) {
         proc->dynamicPriority = proc->staticPriority - 1;
     }
+
     // Ready state
     proc->prevState = proc->processState;
     proc->processState = STATE_READY;
@@ -137,10 +138,13 @@ void handleTransToReady(Event *evt) {
     scheduler->addProcess(proc);
 
     // call
-    if (scheduler->shouldPreempt()) {
-        // if botth condidionts are true, then create preemption evt for current running process
+    int t = evtQueue->getEventTimeWithProcess(currentRunningProcess);
+    if ((t > -1) && scheduler->shouldPreempt(currentRunningProcess, proc, t, currentTime)) {
+        // if both conditions are true, then create preemption evt for current running process
         // at current time
-
+        evtQueue->removeEvent(currentRunningProcess, currentTime, scheduler->getQuantum());
+        Event* e = new Event(currentTime, currentRunningProcess, TRANS_TO_PREEMPT, currentRunningProcess->processState, STATE_READY);
+        evtQueue->putEvent(e);
     }
     callScheduler = true;
 }
@@ -181,6 +185,8 @@ void handleTransToRun(Event *evt) {
     if (evt->oldState == STATE_READY) {
         proc->CPUwaitingTime += proc->timeInPrevState;
     }
+    proc->prevCPUburst = proc->prevCPUburst;
+    proc->prevRemainingTime = proc->curRemainingTime;
 
     int evtTimestamp;
     Event *e;
@@ -405,7 +411,7 @@ void initEventQueue(string fileName) {
         }
         // TODO get maxprios
         Process *p = new Process(pid++, parsed[0], parsed[1], parsed[2], parsed[3],
-                                 getRandom(3));
+                                 getRandom(5));
         Event *evt =
                 new Event(parsed[0], p, TRANS_TO_READY, STATE_CREATED, STATE_READY);
         evtQueue->putEvent(evt);

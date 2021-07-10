@@ -25,6 +25,9 @@ Process::Process(int pid, int arrivalTime, int totalCPUtime, int CPUburst, int I
     this->curIOburst = 0;
     this->curRemainingTime = totalCPUtime;
 
+    this->prevRemainingTime = 0;
+    this->prevCPUburst = 0;
+
     this->timeInPrevState = 0;
     this->stateTs = arrivalTime;
 

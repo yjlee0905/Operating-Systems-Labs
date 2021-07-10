@@ -26,7 +26,7 @@ public:
     // access private data member
     virtual int getQuantum() = 0;
     // for debug, TODO remove
-    virtual bool shouldPreempt();
+    virtual bool shouldPreempt(Process* curProc, Process* proc, int t, int currentTime);
     virtual int getProcessCount() = 0;
     virtual void showSchedulerStatus() = 0;
 };
@@ -124,7 +124,7 @@ public:
 class PREPRIOsched : public PRIOsched {
 public:
     PREPRIOsched(int quantum, int maxPrios);
-    bool shouldPreempt();
+    bool shouldPreempt(Process* curProc, Process* proc, int t, int currentTime);
 
 };
 #endif //OPERATING_SYSTEMS_LABS_SCHEDULER_H

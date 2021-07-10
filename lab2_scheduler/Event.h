@@ -30,7 +30,8 @@ public:
     Event* getEvent();
     void putEvent(Event* newEvent);
     int getNextEventTime();
-    // TODO rm_event();
+    int getEventTimeWithProcess(Process* p);
+    void removeEvent(Process* p, int currentTime, int quantum);
 };
 
 #endif //OPERATING_SYSTEMS_LABS_EVENT_H

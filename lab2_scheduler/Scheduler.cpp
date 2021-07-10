@@ -4,6 +4,7 @@
 
 #include <iostream>
 #include "Scheduler.h"
+#include "Event.h"
 
 using namespace std;
 
@@ -11,7 +12,7 @@ Scheduler::Scheduler(int quantum){
     this->quantum = quantum;
 }
 
-bool Scheduler::shouldPreempt() {
+bool Scheduler::shouldPreempt(Process* curProc, Process* proc, int t, int currentTime) {
     return false;
 }
 
@@ -284,10 +285,21 @@ bool PRIOsched::isMLQempty(deque<Process *> *q) {
 }
 
 PREPRIOsched::PREPRIOsched(int quantum, int maxPrios) : PRIOsched(quantum, maxPrios) {
+    this->quantum = quantum;
+    this->maxPrios = maxPrios;
 
+    // q1 = nullptr;
+    activeQ = q1;
+    expiredQ = q2;
 }
 
 
-bool PREPRIOsched::shouldPreempt() {
-    return true;
+bool PREPRIOsched::shouldPreempt(Process* curProc, Process* proc, int t, int currentTime) {
+    cout << "---> PRIO preemption " << curProc->getPID() << " by " << proc->getPID() << " ?";
+    if ((t != currentTime) && (proc->dynamicPriority > curProc->dynamicPriority)) {
+        cout << " " << proc->getPID() << " TS=" << t << " now=" << currentTime<<") --> YES" << endl;
+        return true;
+    }
+    cout << " " << curProc->getPID() << " TS=" << t << " now=" << currentTime<<") --> NO" << endl;
+    return false;
 }

@@ -30,6 +30,9 @@ public:
     int curIOburst; // ib
     int curRemainingTime; // rem
 
+    int prevRemainingTime;
+    int prevCPUburst;
+
     // prev info
     int timeInPrevState; // how long the process was in the prev state
     int stateTs;
