@@ -5,6 +5,7 @@
 #include "Event.h"
 #include "Process.h"
 #include "Scheduler.h"
+#include <getopt.h>
 #include <fstream>
 #include <iostream>
 #include <queue>
@@ -14,7 +15,7 @@
 
 using namespace std;
 
-void initEventQueue(string fileName);
+void initEventQueue(string fileName, int maxprio);
 void readRandomNums(string fileName);
 int getRandom(int burst);
 void handleTransToReady(Event *evt);
@@ -22,7 +23,7 @@ void handleTransToRun(Event *evt);
 void handleTransToBlock(Event *evt);
 void handleTransToPreempt(Event *evt);
 void handleTransToDone(Event *evt);
-void printStatistics(string schedAlgo);
+void printStatistics();
 void printVerbose(int currentTime, Event *evt);
 
 EventQueue *evtQueue = new EventQueue(); // TODO 포인터 제거?
@@ -42,15 +43,80 @@ int startIOtime = 0;
 int finishIOtime = 0;
 bool isDoingIO = false;
 
-int main() {
-    string inputFileName = "/Users/yjeonlee/Desktop/Operating_Systems/Operating-Systems-Labs/lab2_scheduler/inputs/input6";
-    string rFileName = "/Users/yjeonlee/Desktop/Operating_Systems/Operating-Systems-Labs/lab2_scheduler/rfile";
+int main(int argc, char* argv[]) {
+    int c;
+
+    bool vflag = false;
+    char stype;
+    string algoName;
+    int quantum = MAX_QUANTUM;
+    int maxprio = DEFAULT_MAX_PRIO;
+
+    // proper way to parse arguments
+    while ( (c = getopt(argc,argv,"s:")) != -1 )
+    {
+        switch(c) {
+            case 's':
+                sscanf(optarg, "%c%d:%d", &stype, &quantum, &maxprio);
+
+                //schedtype = atoi(optarg);
+                break;
+            case 'v':
+                vflag = true;
+                break;
+            case 'e':
+                // not implemented
+                break;
+            case 't':
+                // not implemented
+                break;
+            default: //case '?'
+                if ( optopt == 's') {
+                    cout << "Option -s requires an argument." << endl;
+                    return EXIT_FAILURE;
+                } else {
+                    printf("Unknown option character: %c.\n", optopt);
+                    return EXIT_FAILURE;
+                }
+        }
+    }
+
+    string inputFileName = argv[optind];
+    string rFileName = argv[optind + 1];;
 
     readRandomNums(rFileName);
-    initEventQueue(inputFileName);
+    initEventQueue(inputFileName, maxprio);
 
     // scheduler will be initialized here.
-    scheduler = new PREPRIOsched(2, 5);
+    switch (stype)
+    {
+        case 'F':
+            scheduler = new FCFSsched(quantum);
+            algoName = 'FCFS';
+            break;
+        case 'L':
+            scheduler = new LCFSsched(quantum);
+            algoName = 'LCFS';
+            break;
+        case 'S':
+            scheduler = new SRTFsched(quantum);
+            algoName = 'SRTF';
+            break;
+        case 'R':
+            scheduler = new RRsched(quantum);
+            algoName = 'RR';
+            break;
+        case 'P':
+            scheduler = new PRIOsched(quantum, maxprio);
+            algoName = 'PRIO';
+            break;
+        case 'E':
+            scheduler = new PREPRIOsched(quantum, maxprio);
+            algoName = 'PREPRIO';
+            break;
+        default:
+            break;
+    }
 
     // simulation
     while (!evtQueue->eventQ.empty()) { // TODO change to getEvent
@@ -63,23 +129,23 @@ int main() {
         switch (evt->transition) {
             case TRANS_TO_READY:
                 handleTransToReady(evt);
-                printVerbose(currentTime, evt);
+                if (vflag) printVerbose(currentTime, evt);
                 break;
             case TRANS_TO_RUN:
                 handleTransToRun(evt);
-                printVerbose(currentTime, evt);
+                if (vflag) printVerbose(currentTime, evt);
                 break;
             case TRANS_TO_BLOCK:
                 handleTransToBlock(evt);
-                printVerbose(currentTime, evt);
+                if (vflag) printVerbose(currentTime, evt);
                 break;
             case TRANS_TO_PREEMPT:
                 handleTransToPreempt(evt);
-                printVerbose(currentTime, evt);
+                if (vflag) printVerbose(currentTime, evt);
                 break;
             case TRANS_TO_DONE:
                 handleTransToDone(evt);
-                printVerbose(currentTime, evt);
+                if (vflag) printVerbose(currentTime, evt);
                 break;
         }
 
@@ -105,7 +171,7 @@ int main() {
             }
         }
     }
-    printStatistics("FCFS");
+    printStatistics();
 }
 
 void handleTransToReady(Event *evt) {
@@ -305,8 +371,8 @@ void handleTransToDone(Event *evt) {
     currentRunningProcess = nullptr;
 }
 
-void printStatistics(string schedAlgo) {
-    cout << schedAlgo << endl;
+void printStatistics() {
+    scheduler->printAlgoInfo();
 
     int finishTime = -1;
     int timeCPUbusy = 0;
@@ -385,7 +451,7 @@ void printVerbose(int currentTime, Event *evt) {
     }
 }
 
-void initEventQueue(string fileName) {
+void initEventQueue(string fileName, int maxprio) {
     ifstream input;
     input.open(fileName);
     if (!input) {
@@ -411,7 +477,7 @@ void initEventQueue(string fileName) {
         }
         // TODO get maxprios
         Process *p = new Process(pid++, parsed[0], parsed[1], parsed[2], parsed[3],
-                                 getRandom(5));
+                                 getRandom(maxprio));
         Event *evt =
                 new Event(parsed[0], p, TRANS_TO_READY, STATE_CREATED, STATE_READY);
         evtQueue->putEvent(evt);

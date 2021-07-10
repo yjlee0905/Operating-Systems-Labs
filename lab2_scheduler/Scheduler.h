@@ -25,6 +25,7 @@ public:
     // virtual void testPreempt(Process* p, int curTime); TODO
     // access private data member
     virtual int getQuantum() = 0;
+    virtual void printAlgoInfo() = 0;
     // for debug, TODO remove
     virtual bool shouldPreempt(Process* curProc, Process* proc, int t, int currentTime);
     virtual int getProcessCount() = 0;
@@ -42,6 +43,7 @@ public:
     Process* getNextProcess();
     // access private data member
     int getQuantum();
+    void printAlgoInfo();
     // for debug
     int getProcessCount();
     void showSchedulerStatus();
@@ -58,6 +60,7 @@ public:
     Process* getNextProcess();
     // access private data member
     int getQuantum();
+    void printAlgoInfo();
     // for debug
     int getProcessCount();
     void showSchedulerStatus();
@@ -74,6 +77,7 @@ public:
     Process* getNextProcess();
     // access private data member
     int getQuantum();
+    void printAlgoInfo();
     // for debug
     int getProcessCount();
     void showSchedulerStatus();
@@ -91,6 +95,7 @@ public:
     Process* getNextProcess();
     // access private data member
     int getQuantum();
+    void printAlgoInfo();
     // for debug
     int getProcessCount();
     void showSchedulerStatus();
@@ -116,6 +121,7 @@ public:
     Process* getNextProcess();
     // access private data member
     int getQuantum();
+    void printAlgoInfo();
     // for debug
     int getProcessCount();
     void showSchedulerStatus();
@@ -124,6 +130,7 @@ public:
 class PREPRIOsched : public PRIOsched {
 public:
     PREPRIOsched(int quantum, int maxPrios);
+    void printAlgoInfo();
     bool shouldPreempt(Process* curProc, Process* proc, int t, int currentTime);
 
 };

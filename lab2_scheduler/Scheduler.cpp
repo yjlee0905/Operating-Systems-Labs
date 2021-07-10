@@ -37,6 +37,10 @@ Process* FCFSsched::getNextProcess(){
 
 int FCFSsched::getQuantum(){return quantum;}
 
+void FCFSsched::printAlgoInfo() {
+    cout << "FCFS" << endl;
+}
+
 int FCFSsched::getProcessCount() {
     return runQ.size();
 }
@@ -70,6 +74,10 @@ Process* LCFSsched::getNextProcess(){
 }
 
 int LCFSsched::getQuantum(){return quantum;}
+
+void LCFSsched::printAlgoInfo() {
+    cout << "LCFS" << endl;
+}
 
 int LCFSsched::getProcessCount() {
     return runQ.size();
@@ -116,6 +124,10 @@ Process* SRTFsched::getNextProcess(){
 
 int SRTFsched::getQuantum(){return quantum;}
 
+void SRTFsched::printAlgoInfo() {
+    cout << "SRTF" << endl;
+}
+
 int SRTFsched::getProcessCount() {
     return runQ.size();
 }
@@ -149,6 +161,10 @@ Process* RRsched::getNextProcess(){
 }
 
 int RRsched::getQuantum(){return quantum;}
+
+void RRsched::printAlgoInfo() {
+    cout << "RR" << " " << getQuantum() << endl;
+}
 
 int RRsched::getProcessCount() {
     return runQ.size();
@@ -262,6 +278,10 @@ Process* PRIOsched::getNextProcess(){
 
 int PRIOsched::getQuantum(){return quantum;}
 
+void PRIOsched::printAlgoInfo() {
+    cout << "PRIO" << " " << getQuantum() << endl;
+}
+
 int PRIOsched::getProcessCount() {
     return -1;
 }
@@ -293,6 +313,10 @@ PREPRIOsched::PREPRIOsched(int quantum, int maxPrios) : PRIOsched(quantum, maxPr
     expiredQ = q2;
 }
 
+
+void PREPRIOsched::printAlgoInfo() {
+    cout << "PREPRIO" << " " << getQuantum() << endl;
+}
 
 bool PREPRIOsched::shouldPreempt(Process* curProc, Process* proc, int t, int currentTime) {
     cout << "---> PRIO preemption " << curProc->getPID() << " by " << proc->getPID() << " ?";
