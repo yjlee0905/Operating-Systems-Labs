@@ -4,7 +4,6 @@
 
 #include <iostream>
 #include "Scheduler.h"
-#include "Event.h"
 
 using namespace std;
 
@@ -12,7 +11,7 @@ Scheduler::Scheduler(int quantum){
     this->quantum = quantum;
 }
 
-bool Scheduler::shouldPreempt(Process* curProc, Process* proc, int t, int currentTime) {
+bool Scheduler::shouldPreempt(Process* curRunningProc, Process* proc, int evtTime, int currentTime) {
     return false;
 }
 
@@ -35,11 +34,13 @@ Process* FCFSsched::getNextProcess(){
     }
 }
 
-int FCFSsched::getQuantum(){return quantum;}
 
 void FCFSsched::printAlgoInfo() {
     cout << "FCFS" << endl;
 }
+
+int FCFSsched::getQuantum(){return quantum;}
+
 
 int FCFSsched::getProcessCount() {
     return runQ.size();
@@ -73,11 +74,11 @@ Process* LCFSsched::getNextProcess(){
     }
 }
 
-int LCFSsched::getQuantum(){return quantum;}
-
 void LCFSsched::printAlgoInfo() {
     cout << "LCFS" << endl;
 }
+
+int LCFSsched::getQuantum(){return quantum;}
 
 int LCFSsched::getProcessCount() {
     return runQ.size();
@@ -97,7 +98,6 @@ SRTFsched::SRTFsched(int quantum) : Scheduler(quantum) {
 }
 
 void SRTFsched::addProcess(Process* p){
-
     int size = runQ.size();
     for (deque<Process*>::iterator iter = runQ.begin(); iter != runQ.end(); iter++) {
         if (p->curRemainingTime < (*iter)->curRemainingTime) {
@@ -122,11 +122,11 @@ Process* SRTFsched::getNextProcess(){
     }
 }
 
-int SRTFsched::getQuantum(){return quantum;}
-
 void SRTFsched::printAlgoInfo() {
     cout << "SRTF" << endl;
 }
+
+int SRTFsched::getQuantum(){return quantum;}
 
 int SRTFsched::getProcessCount() {
     return runQ.size();
@@ -160,11 +160,11 @@ Process* RRsched::getNextProcess(){
     }
 }
 
-int RRsched::getQuantum(){return quantum;}
-
 void RRsched::printAlgoInfo() {
     cout << "RR" << " " << getQuantum() << endl;
 }
+
+int RRsched::getQuantum(){return quantum;}
 
 int RRsched::getProcessCount() {
     return runQ.size();
@@ -183,9 +183,8 @@ PRIOsched::PRIOsched(int quantum, int maxPrios) : Scheduler(quantum) {
     this->quantum = quantum;
     this->maxPrios = maxPrios;
 
-   activeQ = q1;
-   expiredQ = q2;
-    //activeQ = new deque<Process*>[4];
+    activeQ = q1;
+    expiredQ = q2;
     //expiredQ = new deque<Process*>[maxPrios];
 }
 
@@ -234,19 +233,21 @@ Process* PRIOsched::getNextProcess(){
     return nullptr;
 }
 
-int PRIOsched::getQuantum(){return quantum;}
-
 void PRIOsched::printAlgoInfo() {
     cout << "PRIO" << " " << getQuantum() << endl;
 }
 
+int PRIOsched::getQuantum(){return quantum;}
+
 int PRIOsched::getProcessCount() {
+    // TODO implement
     return -1;
 }
 
 void PRIOsched::showSchedulerStatus(){
-    // TODO impelment
+    // TODO implement
 }
+
 
 PREPRIOsched::PREPRIOsched(int quantum, int maxPrios) : PRIOsched(quantum, maxPrios) {
     this->quantum = quantum;
@@ -260,12 +261,12 @@ void PREPRIOsched::printAlgoInfo() {
     cout << "PREPRIO" << " " << getQuantum() << endl;
 }
 
-bool PREPRIOsched::shouldPreempt(Process* curProc, Process* proc, int t, int currentTime) {
-    //cout << "---> PRIO preemption " << curProc->getPID() << " by " << proc->getPID() << " ?";
-    if ((t != currentTime) && (proc->dynamicPriority > curProc->dynamicPriority)) {
-        //cout << " " << proc->getPID() << " TS=" << t << " now=" << currentTime<<") --> YES" << endl;
+bool PREPRIOsched::shouldPreempt(Process* curRunningProc, Process* proc, int evtTime, int currentTime) {
+    //cout << "---> PRIO preemption " << curRunningProc->getPID() << " by " << proc->getPID() << " ?";
+    if ((evtTime != currentTime) && (proc->dynamicPriority > curRunningProc->dynamicPriority)) {
+        //cout << " " << proc->getPID() << " TS=" << evtTime << " now=" << currentTime<<") --> YES" << endl;
         return true;
     }
-    //cout << " " << curProc->getPID() << " TS=" << t << " now=" << currentTime<<") --> NO" << endl;
+    //cout << " " << curRunningProc->getPID() << " TS=" << evtTime << " now=" << currentTime<<") --> NO" << endl;
     return false;
 }

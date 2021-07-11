@@ -14,36 +14,30 @@ class Scheduler {
 private:
     int quantum;
 public:
-    // TODO change to private
-    deque<Process*> runQ;
-    deque<Process*> *activeQ;
-    deque<Process*> *expiredQ;
-
     Scheduler(int quantum);
     virtual void addProcess(Process* p) = 0;
     virtual Process* getNextProcess() = 0;
-    // virtual void testPreempt(Process* p, int curTime); TODO
+    virtual bool shouldPreempt(Process* curRunningProc, Process* proc, int evtTime, int currentTime);
+    virtual void printAlgoInfo() = 0;
     // access private data member
     virtual int getQuantum() = 0;
-    virtual void printAlgoInfo() = 0;
     // for debug, TODO remove
-    virtual bool shouldPreempt(Process* curProc, Process* proc, int t, int currentTime);
     virtual int getProcessCount() = 0;
     virtual void showSchedulerStatus() = 0;
 };
 
 class FCFSsched : public Scheduler {
 private:
+    deque<Process*> runQ;
     int quantum;
 public:
-    deque<Process*> runQ;
 
     FCFSsched(int quantum);
     void addProcess(Process* p);
     Process* getNextProcess();
+    void printAlgoInfo();
     // access private data member
     int getQuantum();
-    void printAlgoInfo();
     // for debug
     int getProcessCount();
     void showSchedulerStatus();
@@ -51,16 +45,16 @@ public:
 
 class LCFSsched : public Scheduler {
 private:
+    deque<Process*> runQ;
     int quantum;
 public:
-    deque<Process*> runQ;
 
     LCFSsched(int quantum);
     void addProcess(Process* p);
     Process* getNextProcess();
+    void printAlgoInfo();
     // access private data member
     int getQuantum();
-    void printAlgoInfo();
     // for debug
     int getProcessCount();
     void showSchedulerStatus();
@@ -68,34 +62,33 @@ public:
 
 class SRTFsched : public Scheduler {
 private:
+    deque<Process*> runQ;
     int quantum;
 public:
-    deque<Process*> runQ;
 
     SRTFsched(int quantum);
     void addProcess(Process* p);
     Process* getNextProcess();
+    void printAlgoInfo();
     // access private data member
     int getQuantum();
-    void printAlgoInfo();
     // for debug
     int getProcessCount();
     void showSchedulerStatus();
-
 };
 
 class RRsched : public Scheduler {
 private:
+    deque<Process*> runQ;
     int quantum;
 public:
-    deque<Process*> runQ;
 
     RRsched(int quantum);
     void addProcess(Process* p);
     Process* getNextProcess();
+    void printAlgoInfo();
     // access private data member
     int getQuantum();
-    void printAlgoInfo();
     // for debug
     int getProcessCount();
     void showSchedulerStatus();
@@ -103,24 +96,33 @@ public:
 
 class PRIOsched : public Scheduler {
 protected:
-    int quantum;
-    int maxPrios;
-
-public:
     deque<Process*> *activeQ;
     deque<Process*> *expiredQ;
     deque<Process*> q1[32];
     deque<Process*> q2[32];
+    /*
+     * deque<Process*> *activeQ;
+     * deque<Process*> *expiredQ;
+     *
+     * And initialize in constructor as below.
+     *
+     * this->activeQ = new deque<Process*>[maxPrios];
+     * this->expiredQ = new deque<Process*>[maxPrios];
+     *
+     * This does not works, so set to 32
+     * */
 
+    int quantum;
+    int maxPrios;
 
-    //PRIOsched(int quantum);
+public:
+
     PRIOsched(int quantum, int maxPrios);
-
     void addProcess(Process* p);
     Process* getNextProcess();
+    void printAlgoInfo();
     // access private data member
     int getQuantum();
-    void printAlgoInfo();
     // for debug
     int getProcessCount();
     void showSchedulerStatus();
@@ -130,7 +132,6 @@ class PREPRIOsched : public PRIOsched {
 public:
     PREPRIOsched(int quantum, int maxPrios);
     void printAlgoInfo();
-    bool shouldPreempt(Process* curProc, Process* proc, int t, int currentTime);
-
+    bool shouldPreempt(Process* curRunningProc, Process* proc, int evtTime, int currentTime);
 };
 #endif //OPERATING_SYSTEMS_LABS_SCHEDULER_H

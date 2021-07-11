@@ -49,7 +49,6 @@ int main(int argc, char* argv[]) {
     int quantum = MAX_QUANTUM;
     int maxprio = DEFAULT_MAX_PRIO;
 
-    // proper way to parse arguments
     while ((c = getopt(argc,argv,"s:")) != -1) {
         switch(c) {
             case 's':
@@ -68,7 +67,6 @@ int main(int argc, char* argv[]) {
         }
     }
 
-    // scheduler will be initialized here.
     switch (schedType)
     {
         case 'F':
@@ -153,7 +151,7 @@ void handleTransToReady(Event *evt) {
     int currentTime = evt->evtTimeStamp;
     int timeInPrevState = currentTime - proc->stateTs;
 
-    // prevState: Created, Running, Blocked, + Preempted
+    // prevState: Created, Running, Blocked, Preempted
     // nextState: Running
 
     // All: When a process returns from I/O tis dynamic priority is reset to (staticPriority-1)
@@ -267,7 +265,7 @@ void handleTransToPreempt(Event *evt) {
     // prevState: Running
     // nextState: Ready
     proc->dynamicPriority--;
-    proc->processState = STATE_READY; // TODO check only in RR?
+    proc->processState = STATE_READY;
     proc->timeInPrevState = timeInPrevState;
     proc->curCPUburst -= scheduler->getQuantum();
     proc->curRemainingTime -= scheduler->getQuantum();
@@ -327,8 +325,8 @@ void printStatistics() {
     double avgWaitTime = totalCPUwaitTime / results.size();
     double throughput = 100.0 * (results.size() / (double)finishTime);
 
-    printf("SUM: %d %.2lf %.2lf %.2lf %.2lf %.3lf\n", finishTime, cpuUtil, IOutil,
-           avgTurnaroundTime, avgWaitTime, throughput);
+    printf("SUM: %d %.2lf %.2lf %.2lf %.2lf %.3lf\n",
+           finishTime, cpuUtil, IOutil, avgTurnaroundTime, avgWaitTime, throughput);
 }
 
 void printVerbose(int currentTime, Event *evt) {
