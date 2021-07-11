@@ -44,7 +44,7 @@ bool isDoingIO = false;
 
 int main(int argc, char* argv[]) {
     int c;
-    char option;
+    char schedType;
     bool isVerbose = false;
     int quantum = MAX_QUANTUM;
     int maxprio = DEFAULT_MAX_PRIO;
@@ -53,7 +53,7 @@ int main(int argc, char* argv[]) {
     while ((c = getopt(argc,argv,"s:")) != -1) {
         switch(c) {
             case 's':
-                sscanf(optarg, "%c%d:%d", &option, &quantum, &maxprio);
+                sscanf(optarg, "%c%d:%d", &schedType, &quantum, &maxprio);
                 //schedtype = atoi(optarg);
                 break;
             case 'v':
@@ -68,14 +68,8 @@ int main(int argc, char* argv[]) {
         }
     }
 
-    string inputFileName = argv[optind];
-    string rFileName = argv[optind + 1];;
-
-    readRandomNums(rFileName);
-    initEventQueue(inputFileName, maxprio);
-
     // scheduler will be initialized here.
-    switch (option)
+    switch (schedType)
     {
         case 'F':
             scheduler = new FCFSsched(quantum);
@@ -95,14 +89,17 @@ int main(int argc, char* argv[]) {
         case 'E':
             scheduler = new PREPRIOsched(quantum, maxprio);
             break;
-        default:
-            break;
     }
 
+    string inputFileName = argv[optind];
+    string rFileName = argv[optind + 1];;
+
+    readRandomNums(rFileName);
+    initEventQueue(inputFileName, maxprio);
+
     // simulation
-    while (!evtQueue->eventQ.empty()) { // TODO change to getEvent
-        Event *evt = evtQueue->eventQ.front();
-        evtQueue->eventQ.pop_front();
+    Event *evt;
+    while ((evt = evtQueue->getEvent())) {
         int currentTime = evt->evtTimeStamp;
 
         switch (evt->transition) {
@@ -165,7 +162,6 @@ void handleTransToReady(Event *evt) {
     }
 
     proc->processState = STATE_READY;
-    // proc->curCPUburst = 0;
     proc->curIOburst = 0;
     proc->timeInPrevState = timeInPrevState;
     proc->stateTs = currentTime;
@@ -383,7 +379,6 @@ void initEventQueue(string fileName, int maxprio) {
             parsed[i++] = atoi(ptr);
             ptr = strtok(NULL, delim);
         }
-        // TODO get maxprios
         Process *p = new Process(pid++, parsed[0], parsed[1], parsed[2], parsed[3], getRandom(maxprio));
         Event *evt = new Event(parsed[0], p, TRANS_TO_READY, STATE_CREATED, STATE_READY);
         evtQueue->putEvent(evt);
