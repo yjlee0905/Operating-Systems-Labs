@@ -7,7 +7,7 @@
 
 #include "Constants.h"
 
-class Process { // TODO state??
+class Process {
 private:
     int pid;
     int arrivalTime; // AT
@@ -16,10 +16,7 @@ private:
     int IOburst; // IO
 public:
     process_state_t processState;
-    bool isExpired;
-    process_state_t prevState;
     int finishingTime; // FT
-    int turnAroundTime; // TT
     int IOtime; // IT
     int staticPriority; // PRIO
     int dynamicPriority;
@@ -29,9 +26,6 @@ public:
     int curCPUburst; // cb
     int curIOburst; // ib
     int curRemainingTime; // rem
-
-    int prevRemainingTime;
-    int prevCPUburst;
 
     // prev info
     int timeInPrevState; // how long the process was in the prev state

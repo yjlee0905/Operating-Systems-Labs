@@ -23,7 +23,7 @@ public:
     Event(int evtTimeStamp, Process* process, trans transition, process_state_t oldState, process_state_t newState);
 };
 
-class EventQueue { // TODO EventQueue는 Deque으로??
+class EventQueue {
 public:
     deque<Event*> eventQ;
 

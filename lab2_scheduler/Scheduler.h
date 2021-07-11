@@ -106,7 +106,6 @@ protected:
     int quantum;
     int maxPrios;
 
-    bool isMLQempty(deque<Process*> *q);
 public:
     deque<Process*> *activeQ;
     deque<Process*> *expiredQ;
