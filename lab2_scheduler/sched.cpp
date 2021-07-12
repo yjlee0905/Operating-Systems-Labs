@@ -49,7 +49,7 @@ int main(int argc, char* argv[]) {
     int quantum = MAX_QUANTUM;
     int maxprio = DEFAULT_MAX_PRIO;
 
-    while ((c = getopt(argc,argv,"s:")) != -1) {
+    while ((c = getopt(argc,argv,"vets:")) != -1) {
         switch(c) {
             case 's':
                 sscanf(optarg, "%c%d:%d", &schedType, &quantum, &maxprio);
