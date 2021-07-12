@@ -64,6 +64,9 @@ int main(int argc, char* argv[]) {
             case 't':
                 // not implemented
                 break;
+            default:
+                cout << c << " is unsupported option in this program." << endl;
+                exit(1);
         }
     }
 
@@ -87,6 +90,9 @@ int main(int argc, char* argv[]) {
         case 'E':
             scheduler = new PREPRIOsched(quantum, maxprio);
             break;
+        default:
+            cout << schedType << " is unsupported Scheduler type in this program." << endl;
+            exit(1);
     }
 
     string inputFileName = argv[optind];

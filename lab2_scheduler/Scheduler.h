@@ -18,10 +18,11 @@ public:
     virtual void addProcess(Process* p) = 0;
     virtual Process* getNextProcess() = 0;
     virtual bool shouldPreempt(Process* curRunningProc, Process* proc, int evtTime, int currentTime);
+    // to print header in the statistics efficiently, not used in real simulation
     virtual void printAlgoInfo() = 0;
     // access private data member
     virtual int getQuantum() = 0;
-    // for debug, TODO remove
+    // for debug
     virtual int getProcessCount() = 0;
     virtual void showSchedulerStatus() = 0;
 };
@@ -35,6 +36,7 @@ public:
     FCFSsched(int quantum);
     void addProcess(Process* p);
     Process* getNextProcess();
+    // to print header in the statistics efficiently, not used in real simulation
     void printAlgoInfo();
     // access private data member
     int getQuantum();
@@ -52,6 +54,7 @@ public:
     LCFSsched(int quantum);
     void addProcess(Process* p);
     Process* getNextProcess();
+    // to print header in the statistics efficiently, not used in real simulation
     void printAlgoInfo();
     // access private data member
     int getQuantum();
@@ -69,6 +72,7 @@ public:
     SRTFsched(int quantum);
     void addProcess(Process* p);
     Process* getNextProcess();
+    // to print header in the statistics efficiently, not used in real simulation
     void printAlgoInfo();
     // access private data member
     int getQuantum();
@@ -86,6 +90,7 @@ public:
     RRsched(int quantum);
     void addProcess(Process* p);
     Process* getNextProcess();
+    // to print header in the statistics efficiently, not used in real simulation
     void printAlgoInfo();
     // access private data member
     int getQuantum();
@@ -120,6 +125,7 @@ public:
     PRIOsched(int quantum, int maxPrios);
     void addProcess(Process* p);
     Process* getNextProcess();
+    // to print header in the statistics efficiently, not used in real simulation
     void printAlgoInfo();
     // access private data member
     int getQuantum();
@@ -131,7 +137,8 @@ public:
 class PREPRIOsched : public PRIOsched {
 public:
     PREPRIOsched(int quantum, int maxPrios);
-    void printAlgoInfo();
     bool shouldPreempt(Process* curRunningProc, Process* proc, int evtTime, int currentTime);
+    // to print header in the statistics efficiently, not used in real simulation
+    void printAlgoInfo();
 };
 #endif //OPERATING_SYSTEMS_LABS_SCHEDULER_H
