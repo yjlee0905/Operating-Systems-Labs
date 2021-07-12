@@ -58,8 +58,8 @@ int EventQueue::getEventTimeWithProcess(Process *p) {
 void EventQueue::removeEvent(Process *p, int currentTime, int quantum) {
     for (deque<Event*>::iterator iter = eventQ.begin(); iter != eventQ.end(); iter++) {
         if ((*iter)->process->getPID() == p->getPID()) {
-            p->curRemainingTime = (*iter)->process->curRemainingTime - (currentTime - (*iter)->process->stateTs)+quantum;
-            p->curCPUburst = (*iter)->process->curCPUburst - (currentTime - p->stateTs)+quantum;
+            p->curRemainingTime = (*iter)->process->curRemainingTime + quantum - (currentTime - (*iter)->process->stateTs) ;
+            p->curCPUburst = (*iter)->process->curCPUburst + quantum - (currentTime - p->stateTs) ;
             eventQ.erase(iter);
             break;
         }
