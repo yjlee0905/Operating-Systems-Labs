@@ -30,6 +30,7 @@ typedef struct {
 struct Frame {
     // TODO virtual mappings to the process
     int frameNum;
+    int pid;
     int vpage;
     bool isFree = true;
     bool isVictim = false;

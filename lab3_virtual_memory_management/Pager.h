@@ -10,17 +10,19 @@
 class Pager {
 private:
     int hand;
+    int size;
 public:
-    Pager();
-    virtual Frame* selectVictimFrame() = 0;
+    Pager(int size);
+    virtual Frame* selectVictimFrame(frame_t& frameTable) = 0;
 };
 
 class FIFOpager : public Pager {
 private:
     int hand;
+    int size;
 public:
-    FIFOpager();
-    Frame* selectVictimFrame();
+    FIFOpager(int size);
+    Frame* selectVictimFrame(frame_t& frameTable);
 };
 
 #endif //OPERATING_SYSTEMS_LABS_PAGER_H

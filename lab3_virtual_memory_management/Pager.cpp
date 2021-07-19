@@ -7,15 +7,19 @@
 
 using namespace std;
 
-Pager::Pager(){}
+Pager::Pager(int size){}
 
-FIFOpager::FIFOpager() {
+FIFOpager::FIFOpager(int size) : Pager(size) {
     this->hand = 0;
 }
 
-Frame* FIFOpager::selectVictimFrame() {
-    Frame* selectedVictim;
-
+Frame* FIFOpager::selectVictimFrame(frame_t& frameTable) {
+    Frame* selectedVictim = &frameTable.frameTable[hand];
+    hand++;
+    if (hand == size) {
+        hand = 0;
+    }
+    selectedVictim->isVictim = true;
     return selectedVictim;
 }
 

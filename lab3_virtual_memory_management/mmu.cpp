@@ -40,7 +40,7 @@ int main() {
     initProcsAndInstructions(inFileName);
     initFrameTables(pageFrameNum, frameTable, freeList);
 
-    pager = new FIFOpager();
+    pager = new FIFOpager(pageFrameNum);
     simulation();
 
     return 0;
@@ -65,10 +65,11 @@ void simulation() {
             // TODO change current page table pointer
             idx++;
             continue; // skip below codes
+        } else if (curInstr.operation == 'e') {
+            continue; // skip below codes
         }
 
         // now the real instructions of read and write
-
         PTE* pte = &curProc->pageTable.PTEtable[curInstr.id];
         if (!pte->present) {
             // this in reality generates the page fault exception and now you execute
@@ -84,6 +85,24 @@ void simulation() {
             Frame* newFrame = getFrame(pager);
 
             if (newFrame->isVictim) {
+                cout << " UNMAP " << newFrame->pid << ":" << newFrame->vpage << endl;
+
+                int originalPid = newFrame->pid;
+                int originalVpage = newFrame->vpage;
+
+                PTE* originalProc = &procs.at(originalPid).pageTable.PTEtable[originalVpage];
+                originalProc->present = 0;
+
+                if (originalProc->modified) {
+                    if (originalProc->fileMapped) {
+                        originalProc->modified = false;
+                        cout << " FOUT" << endl;
+                    } else {
+                        originalProc->modified = false;
+                        originalProc->pagedOut = true;
+                        cout << " OUT" << endl;
+                    }
+                }
 
             }
 
@@ -97,8 +116,9 @@ void simulation() {
                 }
             }
 
-//            newFrame->vpage = curInstr.id;
-//            cout << " MAP " << newFrame->frameNum << endl;
+            newFrame->pid = curProc->getPID();
+            newFrame->vpage = curInstr.id;
+            cout << " MAP " << newFrame->frameNum << endl;
 
             pte->pageFrameNumber = newFrame->frameNum;
             pte->present = 1;
@@ -132,7 +152,7 @@ void simulation() {
 
 Frame* getFrame(Pager* pager) {
     if (freeList.size() == 0) {
-        return pager->selectVictimFrame();
+        return pager->selectVictimFrame(frameTable);
     } else {
         Frame* frame = freeList.front();
         freeList.pop_front();
@@ -140,37 +160,10 @@ Frame* getFrame(Pager* pager) {
     }
 }
 
-//Process* handleInstructionC(Instruction curInstr) {
-//    for (int i = 0; i < procs.size(); i++) {
-//        if (procs.at(i).getPID() == curInstr.id) {
-//            return &procs[curInstr.id];
-//        }
-//    }
-//    return nullptr;
-//}
-
-//void handleInstructionR(Instruction curInstr) {
-//    int vpage = curInstr.id;
-//    PTE *pte = &curProc->pageTable.PTEtable[vpage];
-//    if (!pte->present) { // page fault handler
-//        for (int i = 0; i < curProc->getVMAs().size(); i++) {
-//            if (curProc->getVMAs().at(i).startingVirtualPage <= vpage && vpage <= curProc->getVMAs().at(i).endingVirtualPage) {
-//                pte->writeProtected = curProc->getVMAs().at(i).writeProtected;
-//                pte->fileMapped = curProc->getVMAs().at(i).fileMapped;
-//            }
-//        }
-//
-//        //Frame* newFrame = getFrame();
-//
-//
-//
-//    }
-//
-//}
-
 void initFrameTables(int frameSize, frame_t& frameTable, deque<Frame*>& freeList) {
     for (int i = 0; i < frameSize; i++) {
         frameTable.frameTable[i].frameNum = i;
+        frameTable.frameTable[i].pid = -1;
         frameTable.frameTable[i].vpage = -1;
         frameTable.frameTable[i].isFree = true;
         frameTable.frameTable[i].isVictim = false;
