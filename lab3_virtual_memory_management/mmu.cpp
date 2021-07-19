@@ -6,13 +6,22 @@
 #include <stdio.h>
 #include <fstream>
 #include <vector>
+#include "Header.h"
 #include "Process.h"
+#include "Pager.h"
 
 using namespace std;
 
+void simulation();
+Frame* getFrame(Pager* pager);
+void initFrameTables(int frameSize, frame_t& frameTable, deque<Frame*>& freeList);
 void initProcsAndInstructions(string fileName);
 void readRandomNums(string fileName);
 int getRandom(int size);
+
+Pager* pager;
+frame_t frameTable;
+deque<Frame*> freeList;
 
 vector<Process> procs;
 vector<Instruction> instructions;
@@ -22,27 +31,153 @@ vector<int> randomNums; // max : 4611686018427387903(built as 64-bit target), 10
 int rofs = 0;
 
 int main() {
+    int pageFrameNum = 32; // will be set through input
+
     string rFileName = "/Users/yjeonlee/Desktop/Operating_Systems/Operating-Systems-Labs/lab3_virtual_memory_management/inputs/rfile";
     readRandomNums(rFileName);
 
-    string inFileName = "/Users/yjeonlee/Desktop/Operating_Systems/Operating-Systems-Labs/lab3_virtual_memory_management/inputs/in2";
+    string inFileName = "/Users/yjeonlee/Desktop/Operating_Systems/Operating-Systems-Labs/lab3_virtual_memory_management/inputs/in1";
     initProcsAndInstructions(inFileName);
-    cout << procs.size() << endl;
-    for (int i=0; i<procs.size(); i++) {
-        //cout << procs.at(i).getPID() << endl;
+    initFrameTables(pageFrameNum, frameTable, freeList);
 
-        for (int j=0; j<procs.at(i).getVMAs().size(); j++) {
-            VMA vma = procs.at(i).getVMAs().at(j);
-            cout << vma.startingVirtualPage << " " << vma.endingVirtualPage << " " << vma.writeProtected << " " << vma.startingVirtualPage << endl;
-
-        }
-    }
-    cout << instructions.size() << endl;
-    for (int i=0; i<instructions.size(); i++) {
-        cout << instructions.at(i).operation << " " << instructions.at(i).id << endl;
-    }
+    pager = new FIFOpager();
+    simulation();
 
     return 0;
+}
+
+void simulation() {
+    int idx = 0;
+    Process* curProc;
+    while (idx < instructions.size()) {
+        Instruction curInstr = instructions.at(idx);
+        cout << idx << ": ==> " << curInstr.operation << " " << curInstr.id << endl;
+
+        // handle special case of "c" and "e" instruction
+        if (curInstr.operation == 'c') {
+            // set current process
+            for (int i = 0; i < procs.size(); i++) {
+                if (procs.at(i).getPID() == curInstr.id) {
+                    curProc = &procs[curInstr.id];
+                    break;
+                }
+            }
+            // TODO change current page table pointer
+            idx++;
+            continue; // skip below codes
+        }
+
+        // now the real instructions of read and write
+
+        PTE* pte = &curProc->pageTable.PTEtable[curInstr.id];
+        if (!pte->present) {
+            // this in reality generates the page fault exception and now you execute
+            // verify this is actually a valid page in a vma if not raise error and next inst
+
+            for (int i = 0; i < curProc->getVMAs().size(); i++) {
+                if (curProc->getVMAs().at(i).startingVirtualPage <= curInstr.id && curInstr.id <= curProc->getVMAs().at(i).endingVirtualPage) {
+                    pte->writeProtected = curProc->getVMAs().at(i).writeProtected;
+                    pte->fileMapped = curProc->getVMAs().at(i).fileMapped;
+                }
+            }
+
+            Frame* newFrame = getFrame(pager);
+
+            if (newFrame->isVictim) {
+
+            }
+
+            if (pte->fileMapped) {
+                cout << " FIN" << endl;
+            } else {
+                if (pte->pagedOut) {
+                    cout << " IN" << endl;
+                } else {
+                    cout << " ZERO" << endl;
+                }
+            }
+
+//            newFrame->vpage = curInstr.id;
+//            cout << " MAP " << newFrame->frameNum << endl;
+
+            pte->pageFrameNumber = newFrame->frameNum;
+            pte->present = 1;
+
+
+
+            // figure out if/what to do with old frame if it was mapped
+            // see general outline in MM-slides under Lab3 header and writeup below
+            // see whether and how to bring in the content of the access page.
+        }
+
+        if (curInstr.operation == 'r') {
+            pte->referenced = 1;
+        } else if (curInstr.operation == 'w') {
+            pte->referenced = 1;
+
+            if (pte->writeProtected) {
+                cout << " SEGPROT" << endl;
+            } else {
+                pte->modified = 1;
+            }
+        }
+
+        // check write protection
+        // simulate instruction execution by hardware by updating the R/M PTE bits
+
+
+        idx++;
+    }
+}
+
+Frame* getFrame(Pager* pager) {
+    if (freeList.size() == 0) {
+        return pager->selectVictimFrame();
+    } else {
+        Frame* frame = freeList.front();
+        freeList.pop_front();
+        return frame;
+    }
+}
+
+//Process* handleInstructionC(Instruction curInstr) {
+//    for (int i = 0; i < procs.size(); i++) {
+//        if (procs.at(i).getPID() == curInstr.id) {
+//            return &procs[curInstr.id];
+//        }
+//    }
+//    return nullptr;
+//}
+
+//void handleInstructionR(Instruction curInstr) {
+//    int vpage = curInstr.id;
+//    PTE *pte = &curProc->pageTable.PTEtable[vpage];
+//    if (!pte->present) { // page fault handler
+//        for (int i = 0; i < curProc->getVMAs().size(); i++) {
+//            if (curProc->getVMAs().at(i).startingVirtualPage <= vpage && vpage <= curProc->getVMAs().at(i).endingVirtualPage) {
+//                pte->writeProtected = curProc->getVMAs().at(i).writeProtected;
+//                pte->fileMapped = curProc->getVMAs().at(i).fileMapped;
+//            }
+//        }
+//
+//        //Frame* newFrame = getFrame();
+//
+//
+//
+//    }
+//
+//}
+
+void initFrameTables(int frameSize, frame_t& frameTable, deque<Frame*>& freeList) {
+    for (int i = 0; i < frameSize; i++) {
+        frameTable.frameTable[i].frameNum = i;
+        frameTable.frameTable[i].vpage = -1;
+        frameTable.frameTable[i].isFree = true;
+        frameTable.frameTable[i].isVictim = false;
+
+        Frame* frame = &frameTable.frameTable[i];
+        freeList.push_back(frame);
+    }
 }
 
 void initProcsAndInstructions(string fileName) {
