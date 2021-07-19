@@ -5,7 +5,9 @@
 #include <iostream>
 #include <stdio.h>
 #include <fstream>
+#include <string>
 #include <vector>
+#include <deque>
 #include "Header.h"
 #include "Process.h"
 #include "Pager.h"
@@ -31,12 +33,12 @@ vector<int> randomNums; // max : 4611686018427387903(built as 64-bit target), 10
 int rofs = 0;
 
 int main() {
-    int pageFrameNum = 32; // will be set through input
+    int pageFrameNum = 16; // will be set through input
 
     string rFileName = "/Users/yjeonlee/Desktop/Operating_Systems/Operating-Systems-Labs/lab3_virtual_memory_management/inputs/rfile";
     readRandomNums(rFileName);
 
-    string inFileName = "/Users/yjeonlee/Desktop/Operating_Systems/Operating-Systems-Labs/lab3_virtual_memory_management/inputs/in1";
+    string inFileName = "/Users/yjeonlee/Desktop/Operating_Systems/Operating-Systems-Labs/lab3_virtual_memory_management/inputs/in3";
     initProcsAndInstructions(inFileName);
     initFrameTables(pageFrameNum, frameTable, freeList);
 
