@@ -49,7 +49,7 @@ int main() {
     initProcsAndInstructions(inFileName);
     initFrameTables(pageFrameNum, frameTable, freeList);
 
-    pager = new RandomPager(pageFrameNum, randomNums);
+    pager = new ClockPager(pageFrameNum, frameTable);
     simulation();
     printStatistics(true, true, true, pageFrameNum);
 
@@ -97,6 +97,7 @@ void simulation() {
                         pte->fileMapped = curProc->getVMAs().at(i).fileMapped;
                         pte->hole = 1;
                         isValidAddr = true;
+                        break;
                     }
                 }
             }
@@ -131,6 +132,7 @@ void simulation() {
                         cout << " OUT" << endl;
                         procs.at(originalPid)->outs++;
                     }
+                    originalProc->pageFrameNumber = 0;
                 }
             }
 
@@ -178,6 +180,17 @@ void simulation() {
         // check write protection
         // simulate instruction execution by hardware by updating the R/M PTE bits
 
+        // debug
+//        cout << "FT:";
+//        for (int i = 0; i < 16; i++) {
+//            if (frameTable.frameTable[i].pid == -1) {
+//                cout << " *";
+//            } else {
+//                cout << " " << frameTable.frameTable[i].pid << ":" << frameTable.frameTable[i].vpage <<
+//                ":" << procs.at(frameTable.frameTable[i].pid)->pageTable.PTEtable[frameTable.frameTable[i].vpage].referenced;
+//            }
+//        }
+//        cout << endl;
 
         idx++;
     }
@@ -185,7 +198,7 @@ void simulation() {
 
 Frame* getFrame(Pager* pager) {
     if (freeList.size() == 0) {
-        return pager->selectVictimFrame(frameTable);
+        return pager->selectVictimFrame(frameTable, procs);
     } else {
         Frame* frame = freeList.front();
         freeList.pop_front();
