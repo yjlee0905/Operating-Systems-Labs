@@ -12,6 +12,19 @@ using namespace std;
 const int NUM_OF_PAGES = 64;
 const int MAX_FRAMES = 128;
 
+const int COST_RW_INSTR = 1;
+const int COST_CTX_SWITCHES = 130;
+const int COST_PROC_EXITS = 1250;
+const int COST_MAPS = 300;
+const int COST_UNMAPS = 400;
+const int COST_INS = 3100;
+const int COST_OUTS = 2700;
+const int COST_FINS = 2800;
+const int COST_FOUTS = 2400;
+const int COST_ZEROS = 140;
+const int COST_SEGV = 340;
+const int COST_SEGPROT = 420;
+
 struct PTE { // 32 bit
     unsigned int present:1;
     unsigned int referenced:1;

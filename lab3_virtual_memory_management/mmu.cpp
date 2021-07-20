@@ -16,6 +16,7 @@ using namespace std;
 
 void simulation();
 Frame* getFrame(Pager* pager);
+void printStatistics(bool isP, bool isF, bool isS, int pageFrameNum);
 void initFrameTables(int frameSize, frame_t& frameTable, deque<Frame*>& freeList);
 void initProcsAndInstructions(string fileName);
 void readRandomNums(string fileName);
@@ -27,6 +28,11 @@ deque<Frame*> freeList;
 
 vector<Process*> procs;
 vector<Instruction> instructions;
+
+// summary
+int instCount = 0;
+int ctxSwitches = 0;
+int processExits = 0;
 
 // TODO check can move to RR algo
 vector<int> randomNums; // max : 4611686018427387903(built as 64-bit target), 1073741823(built as 32-bit target)
@@ -44,6 +50,7 @@ int main() {
 
     pager = new FIFOpager(pageFrameNum);
     simulation();
+    printStatistics(true, true, true, pageFrameNum);
 
     return 0;
 }
@@ -65,6 +72,7 @@ void simulation() {
                 }
             }
             // TODO change current page table pointer
+            ctxSwitches++;
             idx++;
             continue; // skip below codes
         } else if (curInstr.operation == 'e') {
@@ -94,6 +102,7 @@ void simulation() {
 
             if (!isValidAddr) {
                 cout << " SEGV" << endl;
+                curProc->segv++;
                 idx++;
                 continue;
             }
@@ -102,6 +111,7 @@ void simulation() {
 
             if (newFrame->isVictim) {
                 cout << " UNMAP " << newFrame->pid << ":" << newFrame->vpage << endl;
+                procs.at(newFrame->pid)->unmaps++;
 
                 int originalPid = newFrame->pid;
                 int originalVpage = newFrame->vpage;
@@ -113,27 +123,33 @@ void simulation() {
                     if (originalProc->fileMapped) {
                         originalProc->modified = false;
                         cout << " FOUT" << endl;
+                        procs.at(originalPid)->fouts++;
                     } else {
                         originalProc->modified = false;
                         originalProc->pagedOut = true;
                         cout << " OUT" << endl;
+                        procs.at(originalPid)->outs++;
                     }
                 }
             }
 
             if (pte->fileMapped) {
                 cout << " FIN" << endl;
+                curProc->fins++;
             } else {
                 if (pte->pagedOut) {
                     cout << " IN" << endl;
+                    curProc->ins++;
                 } else {
                     cout << " ZERO" << endl;
+                    curProc->zeros++;
                 }
             }
 
             newFrame->pid = curProc->getPID();
             newFrame->vpage = curInstr.id;
             cout << " MAP " << newFrame->frameNum << endl;
+            curProc->maps++;
 
             pte->pageFrameNumber = newFrame->frameNum;
             pte->present = 1;
@@ -152,6 +168,7 @@ void simulation() {
 
             if (pte->writeProtected) {
                 cout << " SEGPROT" << endl;
+                curProc->segprot++;
             } else {
                 pte->modified = 1;
             }
@@ -173,6 +190,74 @@ Frame* getFrame(Pager* pager) {
         freeList.pop_front();
         return frame;
     }
+}
+
+void printStatistics(bool isP, bool isF, bool isS, int pageFrameNum) {
+    // page table
+    for (int i = 0; i < procs.size(); i++) {
+        cout << "PT[" << i << "]:" ;
+        for (int j = 0; j < NUM_OF_PAGES; j++) {
+            if (procs.at(i)->pageTable.PTEtable[j].present == 1) {
+                cout << " " << j << ":";
+
+                if (procs.at(i)->pageTable.PTEtable[j].referenced == 1) {
+                    cout << "R";
+                } else {
+                    cout << "-";
+                }
+
+                if (procs.at(i)->pageTable.PTEtable[j].modified == 1) {
+                    cout << "M";
+                } else {
+                    cout << "-";
+                }
+
+                if (procs.at(i)->pageTable.PTEtable[j].pagedOut == 1) {
+                    cout << "S";
+                } else {
+                    cout << "-";
+                }
+
+            } else {
+                if (procs.at(i)->pageTable.PTEtable[j].pagedOut == 1) {
+                    cout << " #";
+                } else {
+                    cout << " *";
+                }
+            }
+        }
+        cout << endl;
+    }
+
+
+    // frame table
+    cout << "FT:";
+    for (int i = 0; i < pageFrameNum; i++) {
+        if (frameTable.frameTable[i].pid == -1) {
+            cout << " *";
+        } else {
+            cout << " " << frameTable.frameTable[i].pid << ":" << frameTable.frameTable[i].vpage;
+        }
+    }
+    cout << endl;
+
+    int totalCost = 0;
+
+    //per process output
+    for (int i = 0; i < procs.size(); i++) {
+        printf("PROC[%d]: U=%lu M=%lu I=%lu O=%lu FI=%lu FO=%lu Z=%lu SV=%lu SP=%lu\n",
+               procs.at(i)->getPID(),
+               procs.at(i)->unmaps, procs.at(i)->maps, procs.at(i)->ins, procs.at(i)->outs,
+               procs.at(i)->fins, procs.at(i)->fouts, procs.at(i)->zeros, procs.at(i)->segv, procs.at(i)->segprot);
+        totalCost = COST_MAPS * procs.at(i)->maps + COST_UNMAPS * procs.at(i)->unmaps + COST_INS * procs.at(i)->ins + COST_OUTS * procs.at(i)->outs
+                + COST_FINS * procs.at(i)->fins + COST_FOUTS * procs.at(i)->fouts + COST_ZEROS * procs.at(i)->zeros + COST_SEGV * procs.at(i)->segv + COST_SEGPROT * procs.at(i)->segprot;
+    }
+
+    totalCost += COST_RW_INSTR * instCount + COST_CTX_SWITCHES * ctxSwitches + COST_PROC_EXITS * processExits;
+
+    // summary output
+    printf("TOTALCOST %lu %lu %lu %llu %lu\n",
+           instCount, ctxSwitches, processExits, totalCost, sizeof(PTE)); // TODO sizeof(pte_t)
 }
 
 void initFrameTables(int frameSize, frame_t& frameTable, deque<Frame*>& freeList) {
@@ -241,6 +326,7 @@ void initProcsAndInstructions(string fileName) {
                 copiedLine[line.size()] = '\0';
 
                 sscanf(copiedLine, "%c %d", &newInstr.operation, &newInstr.id);
+                instCount++;
                 instructions.push_back(newInstr);
             }
         }
