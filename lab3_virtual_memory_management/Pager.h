@@ -25,4 +25,16 @@ public:
     Frame* selectVictimFrame(frame_t& frameTable);
 };
 
+class RandomPager : public Pager {
+private:
+    int hand;
+    int size;
+    vector<int> randomNums;
+
+    int getRandom();
+public:
+    RandomPager(int size, vector<int> randomNums);
+    Frame* selectVictimFrame(frame_t& frameTable);
+};
+
 #endif //OPERATING_SYSTEMS_LABS_PAGER_H

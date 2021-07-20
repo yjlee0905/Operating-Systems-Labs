@@ -24,4 +24,24 @@ Frame* FIFOpager::selectVictimFrame(frame_t& frameTable) {
     return selectedVictim;
 }
 
+RandomPager::RandomPager(int size, vector<int> randomNums) : Pager(size) {
+    this->hand = 0;
+    this->size = size;
+    this->randomNums = randomNums;
+}
+
+int RandomPager::getRandom() {
+    int num = randomNums[hand++] % size;
+    if (hand == randomNums.size()) { // TODO check
+        hand = 0;
+    }
+    return num;
+}
+
+Frame* RandomPager::selectVictimFrame(frame_t &frameTable) {
+    int idx = getRandom(); // TODO size
+    frameTable.frameTable[idx].isVictim = true;
+    return &frameTable.frameTable[idx];
+}
+
 

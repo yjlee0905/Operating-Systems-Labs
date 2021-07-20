@@ -20,7 +20,7 @@ void printStatistics(bool isP, bool isF, bool isS, int pageFrameNum);
 void initFrameTables(int frameSize, frame_t& frameTable, deque<Frame*>& freeList);
 void initProcsAndInstructions(string fileName);
 void readRandomNums(string fileName);
-int getRandom(int size);
+//int getRandom(int size);
 
 Pager* pager;
 frame_t frameTable;
@@ -30,25 +30,26 @@ vector<Process*> procs;
 vector<Instruction> instructions;
 
 // summary
-int instCount = 0;
-int ctxSwitches = 0;
-int processExits = 0;
+unsigned long long instCount = 0;
+unsigned long long ctxSwitches = 0;
+unsigned long long processExits = 0;
 
 // TODO check can move to RR algo
 vector<int> randomNums; // max : 4611686018427387903(built as 64-bit target), 1073741823(built as 32-bit target)
-int rofs = 0;
+//int rofs = 0;
 
 int main() {
     int pageFrameNum = 32; // will be set through input
 
     string rFileName = "/Users/yjeonlee/Desktop/Operating_Systems/Operating-Systems-Labs/lab3_virtual_memory_management/inputs/rfile";
+    // TODO do only when pager is RR
     readRandomNums(rFileName);
 
     string inFileName = "/Users/yjeonlee/Desktop/Operating_Systems/Operating-Systems-Labs/lab3_virtual_memory_management/inputs/in8";
     initProcsAndInstructions(inFileName);
     initFrameTables(pageFrameNum, frameTable, freeList);
 
-    pager = new FIFOpager(pageFrameNum);
+    pager = new RandomPager(pageFrameNum, randomNums);
     simulation();
     printStatistics(true, true, true, pageFrameNum);
 
@@ -241,7 +242,7 @@ void printStatistics(bool isP, bool isF, bool isS, int pageFrameNum) {
     }
     cout << endl;
 
-    int totalCost = 0;
+    unsigned long long totalCost = 0;
 
     //per process output
     for (int i = 0; i < procs.size(); i++) {
@@ -354,10 +355,10 @@ void readRandomNums(string fileName) {
     rfile.close();
 }
 
-int getRandom(int size) { // TODO check n should which value?
-    int num = randomNums[rofs++] % size;
-    if (rofs == randomNums.size()) { // TODO check
-        rofs = 0;
-    }
-    return num;
-}
+//int getRandom(int size) { // TODO check n should which value?
+//    int num = randomNums[rofs++] % size;
+//    if (rofs == randomNums.size()) { // TODO check
+//        rofs = 0;
+//    }
+//    return num;
+//}
