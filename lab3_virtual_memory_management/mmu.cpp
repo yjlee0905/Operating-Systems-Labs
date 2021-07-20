@@ -25,7 +25,7 @@ Pager* pager;
 frame_t frameTable;
 deque<Frame*> freeList;
 
-vector<Process> procs;
+vector<Process*> procs;
 vector<Instruction> instructions;
 
 // TODO check can move to RR algo
@@ -59,8 +59,8 @@ void simulation() {
         if (curInstr.operation == 'c') {
             // set current process
             for (int i = 0; i < procs.size(); i++) {
-                if (procs.at(i).getPID() == curInstr.id) {
-                    curProc = &procs[curInstr.id];
+                if (procs.at(i)->getPID() == curInstr.id) {
+                    curProc = procs[curInstr.id];
                     break;
                 }
             }
@@ -92,7 +92,7 @@ void simulation() {
                 int originalPid = newFrame->pid;
                 int originalVpage = newFrame->vpage;
 
-                PTE* originalProc = &procs.at(originalPid).pageTable.PTEtable[originalVpage];
+                PTE* originalProc = &procs.at(originalPid)->pageTable.PTEtable[originalVpage];
                 originalProc->present = 0;
 
                 if (originalProc->modified) {
@@ -219,7 +219,18 @@ void initProcsAndInstructions(string fileName) {
 
                 // TODO check *
                 Process *newProc = new Process(parsedProcCnt, VMAs);
-                procs.push_back(*newProc);
+//                // TODO change PTEtable initialization
+//                for (int i = 0; i < MAX_FRAMES; i++) {
+//                    newProc->pageTable.PTEtable[i].present = 0;
+//                    newProc->pageTable.PTEtable[i].referenced = 0;
+//                    newProc->pageTable.PTEtable[i].modified = 0;
+//                    newProc->pageTable.PTEtable[i].writeProtected = 0;
+//                    newProc->pageTable.PTEtable[i].pagedOut = 0;
+//                    newProc->pageTable.PTEtable[i].pageFrameNumber = i;
+//                    newProc->pageTable.PTEtable[i].fileMapped = 0;
+//                }
+
+                procs.push_back(newProc);
 
                 parsedProcCnt++;
             } else { // read instructions
