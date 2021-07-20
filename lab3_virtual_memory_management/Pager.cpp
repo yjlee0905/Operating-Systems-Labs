@@ -11,12 +11,13 @@ Pager::Pager(int size){}
 
 FIFOpager::FIFOpager(int size) : Pager(size) {
     this->hand = 0;
+    this->size = size;
 }
 
 Frame* FIFOpager::selectVictimFrame(frame_t& frameTable) {
     Frame* selectedVictim = &frameTable.frameTable[hand];
     hand++;
-    if (hand == size) {
+    if (hand == this->size) {
         hand = 0;
     }
     selectedVictim->isVictim = true;

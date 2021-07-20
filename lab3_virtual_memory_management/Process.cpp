@@ -27,6 +27,7 @@ Process::Process(int pid, vector<VMA> VMAs){
         this->pageTable.PTEtable[i].pagedOut = 0;
         this->pageTable.PTEtable[i].pageFrameNumber = i;
         this->pageTable.PTEtable[i].fileMapped = 0;
+        this->pageTable.PTEtable[i].hole = 0;
     }
 }
 

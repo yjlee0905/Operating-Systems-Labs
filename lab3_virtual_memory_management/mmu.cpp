@@ -33,12 +33,12 @@ vector<int> randomNums; // max : 4611686018427387903(built as 64-bit target), 10
 int rofs = 0;
 
 int main() {
-    int pageFrameNum = 16; // will be set through input
+    int pageFrameNum = 32; // will be set through input
 
     string rFileName = "/Users/yjeonlee/Desktop/Operating_Systems/Operating-Systems-Labs/lab3_virtual_memory_management/inputs/rfile";
     readRandomNums(rFileName);
 
-    string inFileName = "/Users/yjeonlee/Desktop/Operating_Systems/Operating-Systems-Labs/lab3_virtual_memory_management/inputs/in3";
+    string inFileName = "/Users/yjeonlee/Desktop/Operating_Systems/Operating-Systems-Labs/lab3_virtual_memory_management/inputs/in8";
     initProcsAndInstructions(inFileName);
     initFrameTables(pageFrameNum, frameTable, freeList);
 
@@ -68,6 +68,7 @@ void simulation() {
             idx++;
             continue; // skip below codes
         } else if (curInstr.operation == 'e') {
+            idx++;
             continue; // skip below codes
         }
 
@@ -77,11 +78,24 @@ void simulation() {
             // this in reality generates the page fault exception and now you execute
             // verify this is actually a valid page in a vma if not raise error and next inst
 
-            for (int i = 0; i < curProc->getVMAs().size(); i++) {
-                if (curProc->getVMAs().at(i).startingVirtualPage <= curInstr.id && curInstr.id <= curProc->getVMAs().at(i).endingVirtualPage) {
-                    pte->writeProtected = curProc->getVMAs().at(i).writeProtected;
-                    pte->fileMapped = curProc->getVMAs().at(i).fileMapped;
+            bool isValidAddr = false;
+            if (pte->hole == 1) {
+                isValidAddr = true;
+            } else {
+                for (int i = 0; i < curProc->getVMAs().size(); i++) {
+                    if (curProc->getVMAs().at(i).startingVirtualPage <= curInstr.id && curInstr.id <= curProc->getVMAs().at(i).endingVirtualPage) {
+                        pte->writeProtected = curProc->getVMAs().at(i).writeProtected;
+                        pte->fileMapped = curProc->getVMAs().at(i).fileMapped;
+                        pte->hole = 1;
+                        isValidAddr = true;
+                    }
                 }
+            }
+
+            if (!isValidAddr) {
+                cout << " SEGV" << endl;
+                idx++;
+                continue;
             }
 
             Frame* newFrame = getFrame(pager);
@@ -105,7 +119,6 @@ void simulation() {
                         cout << " OUT" << endl;
                     }
                 }
-
             }
 
             if (pte->fileMapped) {
@@ -219,19 +232,7 @@ void initProcsAndInstructions(string fileName) {
 
                 // TODO check *
                 Process *newProc = new Process(parsedProcCnt, VMAs);
-//                // TODO change PTEtable initialization
-//                for (int i = 0; i < MAX_FRAMES; i++) {
-//                    newProc->pageTable.PTEtable[i].present = 0;
-//                    newProc->pageTable.PTEtable[i].referenced = 0;
-//                    newProc->pageTable.PTEtable[i].modified = 0;
-//                    newProc->pageTable.PTEtable[i].writeProtected = 0;
-//                    newProc->pageTable.PTEtable[i].pagedOut = 0;
-//                    newProc->pageTable.PTEtable[i].pageFrameNumber = i;
-//                    newProc->pageTable.PTEtable[i].fileMapped = 0;
-//                }
-
                 procs.push_back(newProc);
-
                 parsedProcCnt++;
             } else { // read instructions
                 Instruction newInstr;
