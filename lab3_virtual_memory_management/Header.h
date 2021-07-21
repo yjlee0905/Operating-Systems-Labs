@@ -25,6 +25,8 @@ const int COST_ZEROS = 140;
 const int COST_SEGV = 340;
 const int COST_SEGPROT = 420;
 
+const int TIME_LIMIT = 50;
+
 struct PTE { // 32 bit
     unsigned int present:1;
     unsigned int referenced:1;

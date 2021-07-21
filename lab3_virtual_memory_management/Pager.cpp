@@ -4,10 +4,13 @@
 
 #include <iostream>
 #include "Pager.h"
+#include "Header.h"
 
 using namespace std;
 
 Pager::Pager(int size){}
+
+void Pager::incrementTimer() {}
 
 FIFOpager::FIFOpager(int size) : Pager(size) {
     this->hand = 0;
@@ -77,6 +80,61 @@ Frame* ClockPager::selectVictimFrame(frame_t &frameTable, vector<Process*>& proc
             return selectedVictim;
         }
     }
+}
+
+NRUpager::NRUpager(int size) : Pager(size) {
+    this->hand = 0;
+    this->size = size;
+    this->timer = 0;
+}
+
+void NRUpager::incrementTimer() {
+    this->timer++;
+}
+
+Frame* NRUpager::selectVictimFrame(frame_t &frameTable, vector<Process*>& procs) {
+    Frame* selectedVictim;
+    int classes[4] = {-1, -1, -1, -1};
+    int fillClasses = 0;
+
+    for (int i = 0; i < size; i++) {
+        Frame* curFrame = &frameTable.frameTable[hand];
+        PTE* curPage = &procs.at(curFrame->pid)->pageTable.PTEtable[curFrame->vpage];
+        int classId = curPage->referenced * 2 + curPage->modified * 1;
+
+        if (classes[classId] == -1) {
+            classes[classId] = curFrame->frameNum;
+            //if (fillClasses++ == 4) break; TODO check hand
+        }
+
+        hand++;
+        if (hand == size) {
+            //cout << "set to 0" << endl;
+            hand = 0;
+        }
+    }
+
+    for (int i = 0; i < 4; i++) {
+        if (classes[i] != -1) {
+            selectedVictim = &frameTable.frameTable[classes[i]];
+            selectedVictim->isVictim = true;
+            hand = selectedVictim->frameNum + 1;
+            if (hand == size) {
+                hand = 0;
+            }
+            break;
+        }
+    }
+
+    if (timer == TIME_LIMIT) {
+        for (int i = 0; i < size; i++) {
+            if (frameTable.frameTable[i].pid != -1) {
+                procs.at(frameTable.frameTable[i].pid)->pageTable.PTEtable[frameTable.frameTable[i].vpage].referenced = 0;
+            }
+        }
+        timer = 0;
+    }
+    return selectedVictim;
 }
 
 

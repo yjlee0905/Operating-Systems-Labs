@@ -12,9 +12,11 @@ class Pager {
 private:
     int hand;
     int size;
+    int timer;
 public:
     Pager(int size);
     virtual Frame* selectVictimFrame(frame_t& frameTable, vector<Process*>& procs) = 0;
+    virtual void incrementTimer();
 };
 
 class FIFOpager : public Pager {
@@ -47,6 +49,17 @@ private:
 public:
     ClockPager(int size, frame_t& frameTable);
     Frame* selectVictimFrame(frame_t& frameTable, vector<Process*>& procs);
+};
+
+class NRUpager : public Pager {
+private:
+    int hand;
+    int size;
+    int timer;
+public:
+    NRUpager(int size);
+    Frame* selectVictimFrame(frame_t& frameTable, vector<Process*>& procs);
+    void incrementTimer();
 };
 
 #endif //OPERATING_SYSTEMS_LABS_PAGER_H

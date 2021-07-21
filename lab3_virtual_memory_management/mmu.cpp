@@ -46,11 +46,11 @@ int main() {
     // TODO do only when pager is Random
     readRandomNums(rFileName);
 
-    string inFileName = "/Users/yjeonlee/Desktop/Operating_Systems/Operating-Systems-Labs/lab3_virtual_memory_management/inputs/in7";
+    string inFileName = "/Users/yjeonlee/Desktop/Operating_Systems/Operating-Systems-Labs/lab3_virtual_memory_management/inputs/in5";
     initProcsAndInstructions(inFileName);
     initFrameTables(pageFrameNum, frameTable, freeList);
 
-    pager = new FIFOpager(pageFrameNum);
+    pager = new NRUpager(pageFrameNum);
     simulation();
     printStatistics(true, true, true, pageFrameNum);
 
@@ -63,6 +63,7 @@ void simulation() {
     while (idx < instructions.size()) {
         Instruction curInstr = instructions.at(idx);
         cout << idx << ": ==> " << curInstr.operation << " " << curInstr.id << endl;
+        pager->incrementTimer();
 
         // handle special case of "c" and "e" instruction
         if (curInstr.operation == 'c') {
@@ -112,6 +113,10 @@ void simulation() {
 
             Frame* newFrame = getFrame(pager);
 
+            // figure out if/what to do with old frame if it was mapped
+            // see general outline in MM-slides under Lab3 header and writeup below
+            // see whether and how to bring in the content of the access page.
+
             if (newFrame->isVictim) {
                 cout << " UNMAP " << newFrame->pid << ":" << newFrame->vpage << endl;
                 procs.at(newFrame->pid)->unmaps++;
@@ -136,17 +141,15 @@ void simulation() {
                 }
             }
 
-            if (pte->fileMapped) {
+            if (pte->pagedOut) {
+                cout << " IN" << endl;
+                curProc->ins++;
+            } else if (pte->fileMapped) {
                 cout << " FIN" << endl;
                 curProc->fins++;
             } else {
-                if (pte->pagedOut) {
-                    cout << " IN" << endl;
-                    curProc->ins++;
-                } else {
-                    cout << " ZERO" << endl;
-                    curProc->zeros++;
-                }
+                cout << " ZERO" << endl;
+                curProc->zeros++;
             }
 
             newFrame->pid = curProc->getPID();
@@ -157,18 +160,12 @@ void simulation() {
             pte->pageFrameNumber = newFrame->frameNum;
             pte->present = 1;
 
-
-
-            // figure out if/what to do with old frame if it was mapped
-            // see general outline in MM-slides under Lab3 header and writeup below
-            // see whether and how to bring in the content of the access page.
         }
 
-        if (curInstr.operation == 'r') {
-            pte->referenced = 1;
-        } else if (curInstr.operation == 'w') {
-            pte->referenced = 1;
+        pte->referenced = 1;
 
+        // check write protection
+        if (curInstr.operation == 'w') {
             if (pte->writeProtected) {
                 cout << " SEGPROT" << endl;
                 curProc->segprot++;
@@ -177,10 +174,9 @@ void simulation() {
             }
         }
 
-        // check write protection
         // simulate instruction execution by hardware by updating the R/M PTE bits
 
-        // debug
+        // for debug
 //        cout << "FT:";
 //        for (int i = 0; i < 16; i++) {
 //            if (frameTable.frameTable[i].pid == -1) {
