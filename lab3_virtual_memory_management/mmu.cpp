@@ -46,7 +46,7 @@ int main() {
     // TODO do only when pager is Random
     readRandomNums(rFileName);
 
-    string inFileName = "/Users/yjeonlee/Desktop/Operating_Systems/Operating-Systems-Labs/lab3_virtual_memory_management/inputs/in5";
+    string inFileName = "/Users/yjeonlee/Desktop/Operating_Systems/Operating-Systems-Labs/lab3_virtual_memory_management/inputs/in10";
     initProcsAndInstructions(inFileName);
     initFrameTables(pageFrameNum, frameTable, freeList);
 
@@ -187,6 +187,42 @@ void simulation() {
 //            }
 //        }
 //        cout << endl;
+
+//        for (int i = 0; i < procs.size(); i++) {
+//            cout << "PT[" << i << "]:" ;
+//            for (int j = 0; j < NUM_OF_PAGES; j++) {
+//                if (procs.at(i)->pageTable.PTEtable[j].present == 1) {
+//                    cout << " " << j << ":";
+//
+//                    if (procs.at(i)->pageTable.PTEtable[j].referenced == 1) {
+//                        cout << "R";
+//                    } else {
+//                        cout << "-";
+//                    }
+//
+//                    if (procs.at(i)->pageTable.PTEtable[j].modified == 1) {
+//                        cout << "M";
+//                    } else {
+//                        cout << "-";
+//                    }
+//
+//                    if (procs.at(i)->pageTable.PTEtable[j].pagedOut == 1) {
+//                        cout << "S";
+//                    } else {
+//                        cout << "-";
+//                    }
+//
+//                } else {
+//                    if (procs.at(i)->pageTable.PTEtable[j].pagedOut == 1) {
+//                        cout << " #";
+//                    } else {
+//                        cout << " *";
+//                    }
+//                }
+//            }
+//            cout << endl;
+//        }
+
 
         idx++;
     }

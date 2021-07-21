@@ -126,7 +126,7 @@ Frame* NRUpager::selectVictimFrame(frame_t &frameTable, vector<Process*>& procs)
         }
     }
 
-    if (timer == TIME_LIMIT) {
+    if (timer >= TIME_LIMIT) {
         for (int i = 0; i < size; i++) {
             if (frameTable.frameTable[i].pid != -1) {
                 procs.at(frameTable.frameTable[i].pid)->pageTable.PTEtable[frameTable.frameTable[i].vpage].referenced = 0;
