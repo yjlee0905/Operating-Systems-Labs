@@ -39,17 +39,17 @@ vector<int> randomNums; // max : 4611686018427387903(built as 64-bit target), 10
 //int rofs = 0;
 
 int main() {
-    int pageFrameNum = 32; // will be set through input
+    int pageFrameNum = 16; // will be set through input
 
     string rFileName = "/Users/yjeonlee/Desktop/Operating_Systems/Operating-Systems-Labs/lab3_virtual_memory_management/inputs/rfile";
     // TODO do only when pager is Random
     readRandomNums(rFileName);
 
-    string inFileName = "/Users/yjeonlee/Desktop/Operating_Systems/Operating-Systems-Labs/lab3_virtual_memory_management/inputs/in8";
+    string inFileName = "/Users/yjeonlee/Desktop/Operating_Systems/Operating-Systems-Labs/lab3_virtual_memory_management/inputs/in7";
     initProcsAndInstructions(inFileName);
     initFrameTables(pageFrameNum, frameTable, freeList);
 
-    pager = new ClockPager(pageFrameNum, frameTable);
+    pager = new FIFOpager(pageFrameNum);
     simulation();
     printStatistics(true, true, true, pageFrameNum);
 
@@ -262,7 +262,7 @@ void printStatistics(bool isP, bool isF, bool isS, int pageFrameNum) {
                procs.at(i)->getPID(),
                procs.at(i)->unmaps, procs.at(i)->maps, procs.at(i)->ins, procs.at(i)->outs,
                procs.at(i)->fins, procs.at(i)->fouts, procs.at(i)->zeros, procs.at(i)->segv, procs.at(i)->segprot);
-        totalCost = COST_MAPS * procs.at(i)->maps + COST_UNMAPS * procs.at(i)->unmaps + COST_INS * procs.at(i)->ins + COST_OUTS * procs.at(i)->outs
+        totalCost += COST_MAPS * procs.at(i)->maps + COST_UNMAPS * procs.at(i)->unmaps + COST_INS * procs.at(i)->ins + COST_OUTS * procs.at(i)->outs
                 + COST_FINS * procs.at(i)->fins + COST_FOUTS * procs.at(i)->fouts + COST_ZEROS * procs.at(i)->zeros + COST_SEGV * procs.at(i)->segv + COST_SEGPROT * procs.at(i)->segprot;
     }
 
@@ -339,7 +339,9 @@ void initProcsAndInstructions(string fileName) {
                 copiedLine[line.size()] = '\0';
 
                 sscanf(copiedLine, "%c %d", &newInstr.operation, &newInstr.id);
-                instCount++;
+                if (newInstr.operation != 'c' && newInstr.operation != 'e') {
+                    instCount++;
+                }
                 instructions.push_back(newInstr);
             }
         }
