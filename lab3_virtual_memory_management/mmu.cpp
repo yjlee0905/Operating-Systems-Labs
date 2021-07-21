@@ -42,7 +42,7 @@ int main() {
     int pageFrameNum = 32; // will be set through input
 
     string rFileName = "/Users/yjeonlee/Desktop/Operating_Systems/Operating-Systems-Labs/lab3_virtual_memory_management/inputs/rfile";
-    // TODO do only when pager is RR
+    // TODO do only when pager is Random
     readRandomNums(rFileName);
 
     string inFileName = "/Users/yjeonlee/Desktop/Operating_Systems/Operating-Systems-Labs/lab3_virtual_memory_management/inputs/in8";
@@ -132,7 +132,6 @@ void simulation() {
                         cout << " OUT" << endl;
                         procs.at(originalPid)->outs++;
                     }
-                    originalProc->pageFrameNumber = 0;
                 }
             }
 
