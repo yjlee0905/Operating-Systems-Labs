@@ -31,6 +31,7 @@ vector<Instruction> instructions;
 
 // summary
 unsigned long long instCount = 0;
+unsigned long long instCount_RW = 0;
 unsigned long long ctxSwitches = 0;
 unsigned long long processExits = 0;
 
@@ -266,7 +267,7 @@ void printStatistics(bool isP, bool isF, bool isS, int pageFrameNum) {
                 + COST_FINS * procs.at(i)->fins + COST_FOUTS * procs.at(i)->fouts + COST_ZEROS * procs.at(i)->zeros + COST_SEGV * procs.at(i)->segv + COST_SEGPROT * procs.at(i)->segprot;
     }
 
-    totalCost += COST_RW_INSTR * instCount + COST_CTX_SWITCHES * ctxSwitches + COST_PROC_EXITS * processExits;
+    totalCost += COST_RW_INSTR * instCount_RW + COST_CTX_SWITCHES * ctxSwitches + COST_PROC_EXITS * processExits;
 
     // summary output
     printf("TOTALCOST %lu %lu %lu %llu %lu\n",
@@ -339,8 +340,9 @@ void initProcsAndInstructions(string fileName) {
                 copiedLine[line.size()] = '\0';
 
                 sscanf(copiedLine, "%c %d", &newInstr.operation, &newInstr.id);
+                instCount++;
                 if (newInstr.operation != 'c' && newInstr.operation != 'e') {
-                    instCount++;
+                    instCount_RW++;
                 }
                 instructions.push_back(newInstr);
             }
