@@ -93,6 +93,7 @@ void simulation() {
             if (pte->hole == 1) {
                 isValidAddr = true;
             } else {
+                // TODO change to faster way?
                 for (int i = 0; i < curProc->getVMAs().size(); i++) {
                     if (curProc->getVMAs().at(i).startingVirtualPage <= curInstr.id && curInstr.id <= curProc->getVMAs().at(i).endingVirtualPage) {
                         pte->writeProtected = curProc->getVMAs().at(i).writeProtected;
@@ -154,6 +155,7 @@ void simulation() {
 
             newFrame->pid = curProc->getPID();
             newFrame->vpage = curInstr.id;
+            newFrame->age = 0;
             cout << " MAP " << newFrame->frameNum << endl;
             curProc->maps++;
 
