@@ -161,6 +161,11 @@ Frame* AgingPager::selectVictimFrame(frame_t &frameTable, vector<Process *> &pro
             hand = 0;
         }
     }
+
+    hand = selectedVictim->frameNum + 1;
+    if (hand == size) {
+        hand = 0;
+    }
     selectedVictim->isVictim = true;
     return selectedVictim;
 }
