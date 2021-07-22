@@ -50,6 +50,7 @@ struct Frame {
     int vpage;
     bool isFree = true;
     bool isVictim = false;
+    unsigned long age;
 };
 
 typedef struct {

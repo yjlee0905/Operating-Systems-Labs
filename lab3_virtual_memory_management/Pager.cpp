@@ -137,4 +137,32 @@ Frame* NRUpager::selectVictimFrame(frame_t &frameTable, vector<Process*>& procs)
     return selectedVictim;
 }
 
+AgingPager::AgingPager(int size) : Pager(size) {
+    this->hand = 0;
+    this->size = size;
+}
+
+Frame* AgingPager::selectVictimFrame(frame_t &frameTable, vector<Process *> &procs) {
+    Frame* selectedVictim = &frameTable.frameTable[hand];
+
+    for (int i = 0; i < size; i++) {
+        Frame* curFrame = &frameTable.frameTable[hand];
+        curFrame->age = curFrame->age >> 1;
+        if (procs.at(curFrame->pid)->pageTable.PTEtable[curFrame->vpage].referenced == 1) {
+            curFrame->age = (curFrame->age | 0x80000000);
+            procs[curFrame->pid]->pageTable.PTEtable[curFrame->vpage].referenced = 0;
+        }
+
+        if (curFrame->age < selectedVictim->age) {
+            selectedVictim = curFrame;
+        }
+        hand++;
+        if (hand == size) {
+            hand = 0;
+        }
+    }
+    selectedVictim->isVictim = true;
+    return selectedVictim;
+}
+
 

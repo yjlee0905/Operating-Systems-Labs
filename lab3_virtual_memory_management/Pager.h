@@ -62,4 +62,13 @@ public:
     void incrementTimer();
 };
 
+class AgingPager : public Pager {
+private:
+    int hand;
+    int size;
+public:
+    AgingPager(int size);
+    Frame* selectVictimFrame(frame_t& frameTable, vector<Process*>& procs);
+};
+
 #endif //OPERATING_SYSTEMS_LABS_PAGER_H
