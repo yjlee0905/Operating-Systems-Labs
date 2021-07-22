@@ -36,7 +36,8 @@ struct PTE { // 32 bit
     unsigned int pageFrameNumber:7; // maximum number of frames is 128
     // TODO free 20 bit
     unsigned int fileMapped:1;
-    unsigned int hole:1;
+    unsigned int notHole:1;
+    unsigned int checkedHole:1;
 };
 
 typedef struct {

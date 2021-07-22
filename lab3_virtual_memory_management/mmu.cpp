@@ -89,28 +89,71 @@ void simulation() {
             // this in reality generates the page fault exception and now you execute
             // verify this is actually a valid page in a vma if not raise error and next inst
 
-            bool isValidAddr = false;
-            if (pte->hole == 1) {
-                isValidAddr = true;
-            } else {
-                // TODO change to faster way?
+//            bool isValidAddr = false;
+//            if (pte->notHole == 1) {
+//                isValidAddr = true;
+//            } else {
+//                // TODO change to faster way?
+//                for (int i = 0; i < curProc->getVMAs().size(); i++) {
+//                    if (curProc->getVMAs().at(i).startingVirtualPage <= curInstr.id && curInstr.id <= curProc->getVMAs().at(i).endingVirtualPage) {
+//                        pte->writeProtected = curProc->getVMAs().at(i).writeProtected;
+//                        pte->fileMapped = curProc->getVMAs().at(i).fileMapped;
+//                        pte->notHole = 1;
+//                        isValidAddr = true;
+//                        break;
+//                    }
+//                }
+//            }
+//
+//            if (!isValidAddr) {
+//                cout << " SEGV" << endl;
+//                curProc->segv++;
+//                idx++;
+//                continue;
+//            }
+
+            if (pte->checkedHole == 0) {
                 for (int i = 0; i < curProc->getVMAs().size(); i++) {
                     if (curProc->getVMAs().at(i).startingVirtualPage <= curInstr.id && curInstr.id <= curProc->getVMAs().at(i).endingVirtualPage) {
                         pte->writeProtected = curProc->getVMAs().at(i).writeProtected;
                         pte->fileMapped = curProc->getVMAs().at(i).fileMapped;
-                        pte->hole = 1;
-                        isValidAddr = true;
+                        pte->notHole = 1;
+                        pte->checkedHole = 1;
+                        //isValidAddr = true;
                         break;
                     }
                 }
             }
 
-            if (!isValidAddr) {
+            if (pte->notHole == 0) {
                 cout << " SEGV" << endl;
                 curProc->segv++;
                 idx++;
                 continue;
             }
+
+//            bool isValidAddr = false;
+//            if (pte->notHole == 1) {
+//                isValidAddr = true;
+//            } else {
+//                // TODO change to faster way?
+//                for (int i = 0; i < curProc->getVMAs().size(); i++) {
+//                    if (curProc->getVMAs().at(i).startingVirtualPage <= curInstr.id && curInstr.id <= curProc->getVMAs().at(i).endingVirtualPage) {
+//                        pte->writeProtected = curProc->getVMAs().at(i).writeProtected;
+//                        pte->fileMapped = curProc->getVMAs().at(i).fileMapped;
+//                        pte->notHole = 1;
+//                        isValidAddr = true;
+//                        break;
+//                    }
+//                }
+//            }
+//
+//            if (!isValidAddr) {
+//                cout << " SEGV" << endl;
+//                curProc->segv++;
+//                idx++;
+//                continue;
+//            }
 
             Frame* newFrame = getFrame(pager);
 
@@ -153,11 +196,12 @@ void simulation() {
                 curProc->zeros++;
             }
 
+            cout << " MAP " << newFrame->frameNum << endl;
+            curProc->maps++;
+
             newFrame->pid = curProc->getPID();
             newFrame->vpage = curInstr.id;
             newFrame->age = 0;
-            cout << " MAP " << newFrame->frameNum << endl;
-            curProc->maps++;
 
             pte->pageFrameNumber = newFrame->frameNum;
             pte->present = 1;
@@ -241,6 +285,7 @@ Frame* getFrame(Pager* pager) {
 }
 
 void printStatistics(bool isP, bool isF, bool isS, int pageFrameNum) {
+    // TODO unsigned long long
     // page table
     for (int i = 0; i < procs.size(); i++) {
         cout << "PT[" << i << "]:" ;
@@ -309,6 +354,7 @@ void printStatistics(bool isP, bool isF, bool isS, int pageFrameNum) {
 }
 
 void initFrameTables(int frameSize, frame_t& frameTable, deque<Frame*>& freeList) {
+    // TODO check frame table also should be initialized to 0? > deduction?
     for (int i = 0; i < frameSize; i++) {
         frameTable.frameTable[i].frameNum = i;
         frameTable.frameTable[i].pid = -1;
