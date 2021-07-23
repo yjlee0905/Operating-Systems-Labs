@@ -71,4 +71,15 @@ public:
     Frame* selectVictimFrame(frame_t& frameTable, vector<Process*>& procs);
 };
 
+class WorkingSetPager : public Pager {
+private:
+    int hand;
+    int size;
+    int timer;
+public:
+    WorkingSetPager(int size);
+    Frame* selectVictimFrame(frame_t& frameTable, vector<Process*>& procs);
+    void incrementTimer();
+};
+
 #endif //OPERATING_SYSTEMS_LABS_PAGER_H

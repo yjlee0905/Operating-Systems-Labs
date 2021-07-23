@@ -40,7 +40,7 @@ vector<int> randomNums; // max : 4611686018427387903(built as 64-bit target), 10
 //int rofs = 0;
 
 int main() {
-    int pageFrameNum = 32; // will be set through input
+    int pageFrameNum = 16; // will be set through input
 
     string rFileName = "/Users/yjeonlee/Desktop/Operating_Systems/Operating-Systems-Labs/lab3_virtual_memory_management/inputs/rfile";
     // TODO do only when pager is Random
@@ -50,7 +50,7 @@ int main() {
     initProcsAndInstructions(inFileName);
     initFrameTables(pageFrameNum, frameTable, freeList);
 
-    pager = new AgingPager(pageFrameNum);
+    pager = new WorkingSetPager(pageFrameNum);
     simulation();
     printStatistics(true, true, true, pageFrameNum);
 
@@ -362,6 +362,7 @@ void initFrameTables(int frameSize, frame_t& frameTable, deque<Frame*>& freeList
         frameTable.frameTable[i].isFree = true;
         frameTable.frameTable[i].isVictim = false;
         frameTable.frameTable[i].age = 0;
+        frameTable.frameTable[i].timeOfLastUse = 0; // TODO -1?
 
         Frame* frame = &frameTable.frameTable[i];
         freeList.push_back(frame);

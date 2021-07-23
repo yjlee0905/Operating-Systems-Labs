@@ -170,4 +170,68 @@ Frame* AgingPager::selectVictimFrame(frame_t &frameTable, vector<Process *> &pro
     return selectedVictim;
 }
 
+WorkingSetPager::WorkingSetPager(int size) : Pager(size) {
+    this->hand = 0;
+    this->size = size;
+    this->timer = 0;
+}
 
+void WorkingSetPager::incrementTimer() {
+    this->timer++;
+}
+
+Frame* WorkingSetPager::selectVictimFrame(frame_t &frameTable, vector<Process *> &procs) {
+    Frame* selectedVictim;
+    int start = hand;
+    int tmp = start;
+    for (int i = 0; i < size; i++) {
+        Frame* curFrame = &frameTable.frameTable[hand];
+        PTE* curPage = &procs.at(curFrame->pid)->pageTable.PTEtable[curFrame->vpage];
+        if (curPage->referenced == 1) {
+            curPage->referenced = 0;
+            curFrame->timeOfLastUse = timer;
+        } else {
+            if (((timer - curFrame->timeOfLastUse) > TAU) && (curPage->modified == 0)) {
+                //cout << "timer: " << timer << "last use: " << curFrame->timeOfLastUse << endl;
+                selectedVictim = curFrame;
+                hand = selectedVictim->frameNum + 1;
+                if (hand == size) {hand = 0;}
+                selectedVictim = curFrame;
+                selectedVictim->isVictim = true;
+                return selectedVictim;
+            }
+
+        }
+        hand++;
+        if (hand == size) {hand = 0;}
+    }
+
+    selectedVictim = &frameTable.frameTable[start];
+    for (int i = 0; i < size; i++) {
+        Frame* curFrame = &frameTable.frameTable[start];
+        //PTE* curPage = &procs.at(curFrame->pid)->pageTable.PTEtable[curFrame->vpage];
+
+        if (selectedVictim->timeOfLastUse > curFrame->timeOfLastUse) {
+            selectedVictim = curFrame;
+        }
+        start++;
+        if (start == size) {start = 0;}
+    }
+
+    //ASELECT 0-15 | 0(0 0:9 25) 1(0 0:59 26) 2(0 0:54 27) 3(0 0:2 28) 4(0 0:62 29) 5(0 0:16 30) 6(0 0:47 31) 7(0 0:58 32) 8(0 0:1 33) 9(0 0:30 34) 10(0 0:35 35) 11(0 0:55 36) 12(0 0:57 37) 13(0 0:20 38) 14(0 0:17 39) 15(1 0:28 39) | 0
+//    cout << "ASELECT " << tmp << "- | ";
+//    for (int i = 0; i < size; i++) {
+//        Frame* curFrame = &frameTable.frameTable[tmp];
+//        PTE* curPage = &procs.at(curFrame->pid)->pageTable.PTEtable[curFrame->vpage];
+//        cout << tmp << "(" << curPage->referenced << " " << curFrame->pid << ":" << curFrame->vpage << " " << curFrame->timeOfLastUse << ") ";
+//
+//        tmp++;
+//        if (tmp == size) { tmp = 0;}
+//    }
+//    cout << endl;
+
+    hand = selectedVictim->frameNum + 1;
+    if (hand == size) {hand = 0;}
+    selectedVictim->isVictim = true;
+    return selectedVictim;
+}

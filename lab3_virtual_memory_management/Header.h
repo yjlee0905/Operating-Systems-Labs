@@ -27,6 +27,8 @@ const int COST_SEGPROT = 420;
 
 const int TIME_LIMIT = 50;
 
+const int TAU = 49;
+
 struct PTE { // 32 bit
     unsigned int present:1;
     unsigned int referenced:1;
@@ -52,6 +54,7 @@ struct Frame {
     bool isFree = true;
     bool isVictim = false;
     unsigned long age;
+    unsigned long timeOfLastUse;
 };
 
 typedef struct {
