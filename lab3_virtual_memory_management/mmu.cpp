@@ -40,13 +40,13 @@ vector<int> randomNums; // max : 4611686018427387903(built as 64-bit target), 10
 //int rofs = 0;
 
 int main() {
-    int pageFrameNum = 16; // will be set through input
+    int pageFrameNum = 32; // will be set through input
 
     string rFileName = "/Users/yjeonlee/Desktop/Operating_Systems/Operating-Systems-Labs/lab3_virtual_memory_management/inputs/rfile";
     // TODO do only when pager is Random
     readRandomNums(rFileName);
 
-    string inFileName = "/Users/yjeonlee/Desktop/Operating_Systems/Operating-Systems-Labs/lab3_virtual_memory_management/inputs/in10";
+    string inFileName = "/Users/yjeonlee/Desktop/Operating_Systems/Operating-Systems-Labs/lab3_virtual_memory_management/inputs/in11";
     initProcsAndInstructions(inFileName);
     initFrameTables(pageFrameNum, frameTable, freeList);
 
@@ -79,6 +79,40 @@ void simulation() {
             idx++;
             continue; // skip below codes
         } else if (curInstr.operation == 'e') {
+            cout << "EXIT current process " << curInstr.id << endl;
+            processExits++;
+
+            for (int i = 0; i < NUM_OF_PAGES; i++) {
+                PTE* entry = &procs[curInstr.id]->pageTable.PTEtable[i];
+                if (entry->present) {
+                    Frame* curFrame = &frameTable.frameTable[entry->pageFrameNumber];
+                    cout << " UNMAP " << curFrame->pid << ":" << curFrame->vpage << endl;
+                    procs.at(curInstr.id)->unmaps++;
+
+                    curFrame->pid = -1;
+                    curFrame->vpage = -1;
+                    curFrame->isFree = true;
+                    curFrame->isVictim = false;
+                    curFrame->age = 0;
+                    curFrame->timeOfLastUse = 0;
+
+                    if (entry->modified && entry->fileMapped) {
+                        cout << " FOUT" << endl;
+                        procs.at(curInstr.id)->fouts++;
+                    }
+
+                    freeList.push_back(curFrame);
+                }
+
+                entry->present = 0;
+                entry->referenced = 0;
+                entry->modified = 0;
+                entry->writeProtected = 0;
+                entry->pagedOut = 0;
+                entry->pageFrameNumber = -1;
+                entry->fileMapped = 0;
+
+            }
             idx++;
             continue; // skip below codes
         }
