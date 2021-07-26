@@ -3,6 +3,7 @@
 //
 
 #include <iostream>
+#include <unistd.h>
 #include <stdio.h>
 #include <fstream>
 #include <string>
@@ -14,13 +15,12 @@
 
 using namespace std;
 
-void simulation();
+void simulation(bool isO);
 Frame* getFrame(Pager* pager);
 void printStatistics(bool isP, bool isF, bool isS, int pageFrameNum);
 void initFrameTables(int frameSize, frame_t& frameTable, deque<Frame*>& freeList);
 void initProcsAndInstructions(string fileName);
-void readRandomNums(string fileName);
-//int getRandom(int size);
+vector<int> readRandomNums(string fileName);
 
 Pager* pager;
 frame_t frameTable;
@@ -30,39 +30,114 @@ vector<Process*> procs;
 vector<Instruction> instructions;
 
 // summary
-unsigned long long instCount = 0;
+unsigned long instCount = 0;
 unsigned long long instCount_RW = 0;
-unsigned long long ctxSwitches = 0;
-unsigned long long processExits = 0;
+unsigned long ctxSwitches = 0;
+unsigned long processExits = 0;
 
 // TODO check can move to RR algo
-vector<int> randomNums; // max : 4611686018427387903(built as 64-bit target), 1073741823(built as 32-bit target)
-//int rofs = 0;
 
-int main() {
-    int pageFrameNum = 32; // will be set through input
+int main(int argc, char* argv[]) {
+    int c;
+    int pageFrameNum; // will be set through input
+    char pagerType;
 
-    string rFileName = "/Users/yjeonlee/Desktop/Operating_Systems/Operating-Systems-Labs/lab3_virtual_memory_management/inputs/rfile";
-    // TODO do only when pager is Random
-    readRandomNums(rFileName);
+    bool isO = false;
+    bool isP = false;
+    bool isF = false;
+    bool isS = false;
 
-    string inFileName = "/Users/yjeonlee/Desktop/Operating_Systems/Operating-Systems-Labs/lab3_virtual_memory_management/inputs/in11";
+    while ((c = getopt(argc, argv, "f:a:o:")) != -1) {
+        switch (c) {
+            case 'f': // frameNum
+                sscanf(optarg, "%d", &pageFrameNum);
+                break;
+            case 'a': // algorithm
+                sscanf(optarg, "%c", &pagerType);
+                break;
+            case 'o': // options
+                for (; *optarg != '\0'; optarg++) {
+                    //cout << *optarg << endl;
+                    switch (*optarg) {
+                        case 'O':
+                            isO = true;
+                            break;
+                        case 'P':
+                            isP = true;
+                            break;
+                        case 'F':
+                            isF = true;
+                            break;
+                        case 'S':
+                            isS = true;
+                            break;
+                        case 'x':
+                            // not implemented
+                            break;
+                        case 'y':
+                            // not implemented
+                            break;
+                        case 'f':
+                            // not implemented
+                            break;
+                        case 'a':
+                            // not implemented
+                            break;
+                        default:
+                            cout << c << " is unsupported option in this program." << endl;
+                            exit(1);
+                    }
+                }
+                break;
+            default:
+                cout << c << " is unsupported option in this program." << endl;
+                break;
+        }
+    }
+
+    string inFileName = argv[optind];
+    string rFileName = argv[optind + 1];
+
+    switch (pagerType) {
+        case 'f':
+            pager = new FIFOpager(pageFrameNum);
+            break;
+        case 'r':
+            pager = new RandomPager(pageFrameNum, readRandomNums(rFileName));
+            break;
+        case 'c':
+            pager = new ClockPager(pageFrameNum, frameTable);
+            break;
+        case 'e':
+            pager = new NRUpager(pageFrameNum);
+            break;
+        case 'a':
+            pager = new AgingPager(pageFrameNum);
+            break;
+        case 'w':
+            pager = new WorkingSetPager(pageFrameNum);
+            break;
+        default:
+            cout << pagerType << " is unsupported Pager in this program." << endl;
+            exit(1);
+    }
+
     initProcsAndInstructions(inFileName);
     initFrameTables(pageFrameNum, frameTable, freeList);
-
-    pager = new WorkingSetPager(pageFrameNum);
-    simulation();
-    printStatistics(true, true, true, pageFrameNum);
+    simulation(isO);
+    printStatistics(isP, isF, isS, pageFrameNum);
 
     return 0;
 }
 
-void simulation() {
+void simulation(bool isO) {
     int idx = 0;
     Process* curProc;
     while (idx < instructions.size()) {
         Instruction curInstr = instructions.at(idx);
-        cout << idx << ": ==> " << curInstr.operation << " " << curInstr.id << endl;
+        if (isO) {
+            cout << idx << ": ==> " << curInstr.operation << " " << curInstr.id << endl;
+        }
         pager->incrementTimer();
 
         // handle special case of "c" and "e" instruction
@@ -86,7 +161,9 @@ void simulation() {
                 PTE* entry = &procs[curInstr.id]->pageTable.PTEtable[i];
                 if (entry->present) {
                     Frame* curFrame = &frameTable.frameTable[entry->pageFrameNumber];
-                    cout << " UNMAP " << curFrame->pid << ":" << curFrame->vpage << endl;
+                    if (isO) {
+                        cout << " UNMAP " << curFrame->pid << ":" << curFrame->vpage << endl;
+                    }
                     procs.at(curInstr.id)->unmaps++;
 
                     curFrame->pid = -1;
@@ -97,7 +174,9 @@ void simulation() {
                     curFrame->timeOfLastUse = 0;
 
                     if (entry->modified && entry->fileMapped) {
-                        cout << " FOUT" << endl;
+                        if (isO) {
+                            cout << " FOUT" << endl;
+                        }
                         procs.at(curInstr.id)->fouts++;
                     }
 
@@ -123,29 +202,6 @@ void simulation() {
             // this in reality generates the page fault exception and now you execute
             // verify this is actually a valid page in a vma if not raise error and next inst
 
-//            bool isValidAddr = false;
-//            if (pte->notHole == 1) {
-//                isValidAddr = true;
-//            } else {
-//                // TODO change to faster way?
-//                for (int i = 0; i < curProc->getVMAs().size(); i++) {
-//                    if (curProc->getVMAs().at(i).startingVirtualPage <= curInstr.id && curInstr.id <= curProc->getVMAs().at(i).endingVirtualPage) {
-//                        pte->writeProtected = curProc->getVMAs().at(i).writeProtected;
-//                        pte->fileMapped = curProc->getVMAs().at(i).fileMapped;
-//                        pte->notHole = 1;
-//                        isValidAddr = true;
-//                        break;
-//                    }
-//                }
-//            }
-//
-//            if (!isValidAddr) {
-//                cout << " SEGV" << endl;
-//                curProc->segv++;
-//                idx++;
-//                continue;
-//            }
-
             if (pte->checkedHole == 0) {
                 for (int i = 0; i < curProc->getVMAs().size(); i++) {
                     if (curProc->getVMAs().at(i).startingVirtualPage <= curInstr.id && curInstr.id <= curProc->getVMAs().at(i).endingVirtualPage) {
@@ -160,34 +216,13 @@ void simulation() {
             }
 
             if (pte->notHole == 0) {
-                cout << " SEGV" << endl;
+                if (isO) {
+                    cout << " SEGV" << endl;
+                }
                 curProc->segv++;
                 idx++;
                 continue;
             }
-
-//            bool isValidAddr = false;
-//            if (pte->notHole == 1) {
-//                isValidAddr = true;
-//            } else {
-//                // TODO change to faster way?
-//                for (int i = 0; i < curProc->getVMAs().size(); i++) {
-//                    if (curProc->getVMAs().at(i).startingVirtualPage <= curInstr.id && curInstr.id <= curProc->getVMAs().at(i).endingVirtualPage) {
-//                        pte->writeProtected = curProc->getVMAs().at(i).writeProtected;
-//                        pte->fileMapped = curProc->getVMAs().at(i).fileMapped;
-//                        pte->notHole = 1;
-//                        isValidAddr = true;
-//                        break;
-//                    }
-//                }
-//            }
-//
-//            if (!isValidAddr) {
-//                cout << " SEGV" << endl;
-//                curProc->segv++;
-//                idx++;
-//                continue;
-//            }
 
             Frame* newFrame = getFrame(pager);
 
@@ -196,7 +231,9 @@ void simulation() {
             // see whether and how to bring in the content of the access page.
 
             if (newFrame->isVictim) {
-                cout << " UNMAP " << newFrame->pid << ":" << newFrame->vpage << endl;
+                if (isO) {
+                    cout << " UNMAP " << newFrame->pid << ":" << newFrame->vpage << endl;
+                }
                 procs.at(newFrame->pid)->unmaps++;
 
                 int originalPid = newFrame->pid;
@@ -208,29 +245,41 @@ void simulation() {
                 if (originalProc->modified) {
                     if (originalProc->fileMapped) {
                         originalProc->modified = false;
-                        cout << " FOUT" << endl;
+                        if (isO) {
+                            cout << " FOUT" << endl;
+                        }
                         procs.at(originalPid)->fouts++;
                     } else {
                         originalProc->modified = false;
                         originalProc->pagedOut = true;
-                        cout << " OUT" << endl;
+                        if (isO) {
+                            cout << " OUT" << endl;
+                        }
                         procs.at(originalPid)->outs++;
                     }
                 }
             }
 
             if (pte->pagedOut) {
-                cout << " IN" << endl;
+                if (isO) {
+                    cout << " IN" << endl;
+                }
                 curProc->ins++;
             } else if (pte->fileMapped) {
-                cout << " FIN" << endl;
+                if (isO) {
+                    cout << " FIN" << endl;
+                }
                 curProc->fins++;
             } else {
-                cout << " ZERO" << endl;
+                if (isO) {
+                    cout << " ZERO" << endl;
+                }
                 curProc->zeros++;
             }
 
-            cout << " MAP " << newFrame->frameNum << endl;
+            if (isO) {
+                cout << " MAP " << newFrame->frameNum << endl;
+            }
             curProc->maps++;
 
             newFrame->pid = curProc->getPID();
@@ -247,7 +296,9 @@ void simulation() {
         // check write protection
         if (curInstr.operation == 'w') {
             if (pte->writeProtected) {
-                cout << " SEGPROT" << endl;
+                if (isO) {
+                    cout << " SEGPROT" << endl;
+                }
                 curProc->segprot++;
             } else {
                 pte->modified = 1;
@@ -321,70 +372,76 @@ Frame* getFrame(Pager* pager) {
 void printStatistics(bool isP, bool isF, bool isS, int pageFrameNum) {
     // TODO unsigned long long
     // page table
-    for (int i = 0; i < procs.size(); i++) {
-        cout << "PT[" << i << "]:" ;
-        for (int j = 0; j < NUM_OF_PAGES; j++) {
-            if (procs.at(i)->pageTable.PTEtable[j].present == 1) {
-                cout << " " << j << ":";
+    if (isP) {
+        for (int i = 0; i < procs.size(); i++) {
+            cout << "PT[" << i << "]:" ;
+            for (int j = 0; j < NUM_OF_PAGES; j++) {
+                if (procs.at(i)->pageTable.PTEtable[j].present == 1) {
+                    cout << " " << j << ":";
 
-                if (procs.at(i)->pageTable.PTEtable[j].referenced == 1) {
-                    cout << "R";
+                    if (procs.at(i)->pageTable.PTEtable[j].referenced == 1) {
+                        cout << "R";
+                    } else {
+                        cout << "-";
+                    }
+
+                    if (procs.at(i)->pageTable.PTEtable[j].modified == 1) {
+                        cout << "M";
+                    } else {
+                        cout << "-";
+                    }
+
+                    if (procs.at(i)->pageTable.PTEtable[j].pagedOut == 1) {
+                        cout << "S";
+                    } else {
+                        cout << "-";
+                    }
+
                 } else {
-                    cout << "-";
+                    if (procs.at(i)->pageTable.PTEtable[j].pagedOut == 1) {
+                        cout << " #";
+                    } else {
+                        cout << " *";
+                    }
                 }
+            }
+            cout << endl;
+        }
+    }
 
-                if (procs.at(i)->pageTable.PTEtable[j].modified == 1) {
-                    cout << "M";
-                } else {
-                    cout << "-";
-                }
-
-                if (procs.at(i)->pageTable.PTEtable[j].pagedOut == 1) {
-                    cout << "S";
-                } else {
-                    cout << "-";
-                }
-
+    // frame table
+    if (isF) {
+        cout << "FT:";
+        for (int i = 0; i < pageFrameNum; i++) {
+            if (frameTable.frameTable[i].pid == -1) {
+                cout << " *";
             } else {
-                if (procs.at(i)->pageTable.PTEtable[j].pagedOut == 1) {
-                    cout << " #";
-                } else {
-                    cout << " *";
-                }
+                cout << " " << frameTable.frameTable[i].pid << ":" << frameTable.frameTable[i].vpage;
             }
         }
         cout << endl;
     }
 
+    if (isS) {
+        unsigned long long totalCost = 0;
 
-    // frame table
-    cout << "FT:";
-    for (int i = 0; i < pageFrameNum; i++) {
-        if (frameTable.frameTable[i].pid == -1) {
-            cout << " *";
-        } else {
-            cout << " " << frameTable.frameTable[i].pid << ":" << frameTable.frameTable[i].vpage;
+        //per process output
+        for (int i = 0; i < procs.size(); i++) {
+            printf("PROC[%d]: U=%lu M=%lu I=%lu O=%lu FI=%lu FO=%lu Z=%lu SV=%lu SP=%lu\n",
+                   procs.at(i)->getPID(),
+                   procs.at(i)->unmaps, procs.at(i)->maps, procs.at(i)->ins, procs.at(i)->outs,
+                   procs.at(i)->fins, procs.at(i)->fouts, procs.at(i)->zeros, procs.at(i)->segv, procs.at(i)->segprot);
+            totalCost += COST_MAPS * procs.at(i)->maps + COST_UNMAPS * procs.at(i)->unmaps + COST_INS * procs.at(i)->ins + COST_OUTS * procs.at(i)->outs
+                         + COST_FINS * procs.at(i)->fins + COST_FOUTS * procs.at(i)->fouts + COST_ZEROS * procs.at(i)->zeros + COST_SEGV * procs.at(i)->segv + COST_SEGPROT * procs.at(i)->segprot;
         }
+
+        totalCost += COST_RW_INSTR * instCount_RW + COST_CTX_SWITCHES * ctxSwitches + COST_PROC_EXITS * processExits;
+
+        // summary output
+        printf("TOTALCOST %lu %lu %lu %llu %lu\n",
+               instCount, ctxSwitches, processExits, totalCost, sizeof(PTE)); // TODO sizeof(pte_t)
+
     }
-    cout << endl;
-
-    unsigned long long totalCost = 0;
-
-    //per process output
-    for (int i = 0; i < procs.size(); i++) {
-        printf("PROC[%d]: U=%lu M=%lu I=%lu O=%lu FI=%lu FO=%lu Z=%lu SV=%lu SP=%lu\n",
-               procs.at(i)->getPID(),
-               procs.at(i)->unmaps, procs.at(i)->maps, procs.at(i)->ins, procs.at(i)->outs,
-               procs.at(i)->fins, procs.at(i)->fouts, procs.at(i)->zeros, procs.at(i)->segv, procs.at(i)->segprot);
-        totalCost += COST_MAPS * procs.at(i)->maps + COST_UNMAPS * procs.at(i)->unmaps + COST_INS * procs.at(i)->ins + COST_OUTS * procs.at(i)->outs
-                + COST_FINS * procs.at(i)->fins + COST_FOUTS * procs.at(i)->fouts + COST_ZEROS * procs.at(i)->zeros + COST_SEGV * procs.at(i)->segv + COST_SEGPROT * procs.at(i)->segprot;
-    }
-
-    totalCost += COST_RW_INSTR * instCount_RW + COST_CTX_SWITCHES * ctxSwitches + COST_PROC_EXITS * processExits;
-
-    // summary output
-    printf("TOTALCOST %lu %lu %lu %llu %lu\n",
-           instCount, ctxSwitches, processExits, totalCost, sizeof(PTE)); // TODO sizeof(pte_t)
 }
 
 void initFrameTables(int frameSize, frame_t& frameTable, deque<Frame*>& freeList) {
@@ -467,7 +524,9 @@ void initProcsAndInstructions(string fileName) {
 }
 
 // TODO change to read only when RR algorithm
-void readRandomNums(string fileName) {
+vector<int> readRandomNums(string fileName) {
+    vector<int> randomNums; // max : 4611686018427387903(built as 64-bit target), 1073741823(built as 32-bit target)
+
     ifstream rfile;
     rfile.open(fileName);
     if (!rfile) {
@@ -485,12 +544,6 @@ void readRandomNums(string fileName) {
     }
 
     rfile.close();
-}
 
-//int getRandom(int size) { // TODO check n should which value?
-//    int num = randomNums[rofs++] % size;
-//    if (rofs == randomNums.size()) { // TODO check
-//        rofs = 0;
-//    }
-//    return num;
-//}
+    return randomNums;
+}

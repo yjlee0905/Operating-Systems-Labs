@@ -12,18 +12,18 @@ using namespace std;
 const int NUM_OF_PAGES = 64;
 const int MAX_FRAMES = 128;
 
-const int COST_RW_INSTR = 1;
-const int COST_CTX_SWITCHES = 130;
-const int COST_PROC_EXITS = 1250;
-const int COST_MAPS = 300;
-const int COST_UNMAPS = 400;
-const int COST_INS = 3100;
-const int COST_OUTS = 2700;
-const int COST_FINS = 2800;
-const int COST_FOUTS = 2400;
-const int COST_ZEROS = 140;
-const int COST_SEGV = 340;
-const int COST_SEGPROT = 420;
+const unsigned long long COST_RW_INSTR = 1;
+const unsigned long long COST_CTX_SWITCHES = 130;
+const unsigned long long COST_PROC_EXITS = 1250;
+const unsigned long long COST_MAPS = 300;
+const unsigned long long COST_UNMAPS = 400;
+const unsigned long long COST_INS = 3100;
+const unsigned long long COST_OUTS = 2700;
+const unsigned long long COST_FINS = 2800;
+const unsigned long long COST_FOUTS = 2400;
+const unsigned long long COST_ZEROS = 140;
+const unsigned long long COST_SEGV = 340;
+const unsigned long long COST_SEGPROT = 420;
 
 const int TIME_LIMIT = 50;
 

@@ -95,7 +95,6 @@ void NRUpager::incrementTimer() {
 Frame* NRUpager::selectVictimFrame(frame_t &frameTable, vector<Process*>& procs) {
     Frame* selectedVictim;
     int classes[4] = {-1, -1, -1, -1};
-    int fillClasses = 0;
 
     for (int i = 0; i < size; i++) {
         Frame* curFrame = &frameTable.frameTable[hand];
@@ -104,7 +103,6 @@ Frame* NRUpager::selectVictimFrame(frame_t &frameTable, vector<Process*>& procs)
 
         if (classes[classId] == -1) {
             classes[classId] = curFrame->frameNum;
-            //if (fillClasses++ == 4) break; TODO check hand
         }
 
         hand++;
@@ -183,7 +181,7 @@ void WorkingSetPager::incrementTimer() {
 Frame* WorkingSetPager::selectVictimFrame(frame_t &frameTable, vector<Process *> &procs) {
     Frame* selectedVictim;
     int start = hand;
-    int tmp = start;
+    //int tmp = start; for debugging
     for (int i = 0; i < size; i++) {
         Frame* curFrame = &frameTable.frameTable[hand];
         PTE* curPage = &procs.at(curFrame->pid)->pageTable.PTEtable[curFrame->vpage];
@@ -191,8 +189,7 @@ Frame* WorkingSetPager::selectVictimFrame(frame_t &frameTable, vector<Process *>
             curPage->referenced = 0;
             curFrame->timeOfLastUse = timer;
         } else {
-            if (((timer - curFrame->timeOfLastUse) > TAU) && (curPage->modified == 0)) {
-                //cout << "timer: " << timer << "last use: " << curFrame->timeOfLastUse << endl;
+            if (((timer - curFrame->timeOfLastUse) > TAU)) {
                 selectedVictim = curFrame;
                 hand = selectedVictim->frameNum + 1;
                 if (hand == size) {hand = 0;}
@@ -209,7 +206,6 @@ Frame* WorkingSetPager::selectVictimFrame(frame_t &frameTable, vector<Process *>
     selectedVictim = &frameTable.frameTable[start];
     for (int i = 0; i < size; i++) {
         Frame* curFrame = &frameTable.frameTable[start];
-        //PTE* curPage = &procs.at(curFrame->pid)->pageTable.PTEtable[curFrame->vpage];
 
         if (selectedVictim->timeOfLastUse > curFrame->timeOfLastUse) {
             selectedVictim = curFrame;
