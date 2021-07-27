@@ -58,7 +58,6 @@ int main(int argc, char* argv[]) {
                 break;
             case 'o': // options
                 for (; *optarg != '\0'; optarg++) {
-                    //cout << *optarg << endl;
                     switch (*optarg) {
                         case 'O':
                             isO = true;
@@ -144,13 +143,7 @@ void simulation(bool isO) {
         // handle special case of "c" and "e" instruction
         if (curInstr.operation == 'c') {
             // set current process
-            for (int i = 0; i < procs.size(); i++) {
-                if (procs.at(i)->getPID() == curInstr.id) {
-                    curProc = procs[curInstr.id];
-                    break;
-                }
-            }
-            // TODO change current page table pointer
+            curProc = procs[curInstr.id];
             ctxSwitches++;
         } else if (curInstr.operation == 'e') {
             cout << "EXIT current process " << curInstr.id << endl;
@@ -238,18 +231,20 @@ void simulation(bool isO) {
 
                     if (originalProc->modified) {
                         if (originalProc->fileMapped) {
-                            originalProc->modified = false;
                             if (isO) {
                                 cout << " FOUT" << endl;
                             }
                             procs.at(originalPid)->fouts++;
-                        } else {
+
                             originalProc->modified = false;
-                            originalProc->pagedOut = true;
+                        } else {
                             if (isO) {
                                 cout << " OUT" << endl;
                             }
                             procs.at(originalPid)->outs++;
+
+                            originalProc->modified = false;
+                            originalProc->pagedOut = true;
                         }
                     }
                 }
@@ -279,6 +274,7 @@ void simulation(bool isO) {
                 newFrame->pid = curProc->getPID();
                 newFrame->vpage = curInstr.id;
                 newFrame->age = 0;
+                newFrame->timeOfLastUse = 0;
 
                 pte->pageFrameNumber = newFrame->frameNum;
                 pte->present = 1;

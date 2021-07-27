@@ -19,15 +19,15 @@ public:
     pte_t pageTable; // represents the translations from virtual pages to physical frames for that process
 
     // for statistics
-    unsigned long long maps;
-    unsigned long long unmaps;
-    unsigned long long ins;
-    unsigned long long outs;
-    unsigned long long fins;
-    unsigned long long fouts;
-    unsigned long long zeros;
-    unsigned long long segv;
-    unsigned long long segprot;
+    unsigned long maps;
+    unsigned long unmaps;
+    unsigned long ins;
+    unsigned long outs;
+    unsigned long fins;
+    unsigned long fouts;
+    unsigned long zeros;
+    unsigned long segv;
+    unsigned long segprot;
 
     Process(int pid, vector<VMA> VMAs);
     // access private data member
