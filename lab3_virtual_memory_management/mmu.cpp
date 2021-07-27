@@ -152,8 +152,6 @@ void simulation(bool isO) {
             }
             // TODO change current page table pointer
             ctxSwitches++;
-            idx++;
-            continue; // skip below codes
         } else if (curInstr.operation == 'e') {
             cout << "EXIT current process " << curInstr.id << endl;
             processExits++;
@@ -192,169 +190,119 @@ void simulation(bool isO) {
                 entry->fileMapped = 0;
 
             }
-            idx++;
-            continue; // skip below codes
-        }
+        } else if (curInstr.operation == 'r' || curInstr.operation == 'w') {
+            // now the real instructions of read and write
+            PTE* pte = &curProc->pageTable.PTEtable[curInstr.id];
+            if (!pte->present) {
+                // this in reality generates the page fault exception and now you execute
+                // verify this is actually a valid page in a vma if not raise error and next inst
 
-        // now the real instructions of read and write
-        PTE* pte = &curProc->pageTable.PTEtable[curInstr.id];
-        if (!pte->present) {
-            // this in reality generates the page fault exception and now you execute
-            // verify this is actually a valid page in a vma if not raise error and next inst
-
-            if (pte->checkedHole == 0) {
-                for (int i = 0; i < curProc->getVMAs().size(); i++) {
-                    if (curProc->getVMAs().at(i).startingVirtualPage <= curInstr.id && curInstr.id <= curProc->getVMAs().at(i).endingVirtualPage) {
-                        pte->writeProtected = curProc->getVMAs().at(i).writeProtected;
-                        pte->fileMapped = curProc->getVMAs().at(i).fileMapped;
-                        pte->notHole = 1;
-                        pte->checkedHole = 1;
-                        //isValidAddr = true;
-                        break;
+                if (pte->checkedHole == 0) {
+                    for (int i = 0; i < curProc->getVMAs().size(); i++) {
+                        if (curProc->getVMAs().at(i).startingVirtualPage <= curInstr.id && curInstr.id <= curProc->getVMAs().at(i).endingVirtualPage) {
+                            pte->writeProtected = curProc->getVMAs().at(i).writeProtected;
+                            pte->fileMapped = curProc->getVMAs().at(i).fileMapped;
+                            pte->notHole = 1;
+                            pte->checkedHole = 1;
+                            break;
+                        }
                     }
                 }
-            }
 
-            if (pte->notHole == 0) {
-                if (isO) {
-                    cout << " SEGV" << endl;
+                if (pte->notHole == 0) {
+                    if (isO) {
+                        cout << " SEGV" << endl;
+                    }
+                    curProc->segv++;
+                    idx++;
+                    continue;
                 }
-                curProc->segv++;
-                idx++;
-                continue;
-            }
 
-            Frame* newFrame = getFrame(pager);
+                Frame* newFrame = getFrame(pager);
 
-            // figure out if/what to do with old frame if it was mapped
-            // see general outline in MM-slides under Lab3 header and writeup below
-            // see whether and how to bring in the content of the access page.
+                // figure out if/what to do with old frame if it was mapped
+                // see general outline in MM-slides under Lab3 header and writeup below
+                // see whether and how to bring in the content of the access page.
 
-            if (isVictim) {
-                if (isO) {
-                    cout << " UNMAP " << newFrame->pid << ":" << newFrame->vpage << endl;
-                }
-                procs.at(newFrame->pid)->unmaps++;
+                if (isVictim) {
+                    if (isO) {
+                        cout << " UNMAP " << newFrame->pid << ":" << newFrame->vpage << endl;
+                    }
+                    procs.at(newFrame->pid)->unmaps++;
 
-                int originalPid = newFrame->pid;
-                int originalVpage = newFrame->vpage;
+                    int originalPid = newFrame->pid;
+                    int originalVpage = newFrame->vpage;
 
-                PTE* originalProc = &procs.at(originalPid)->pageTable.PTEtable[originalVpage];
-                originalProc->present = 0;
+                    PTE* originalProc = &procs.at(originalPid)->pageTable.PTEtable[originalVpage];
+                    originalProc->present = 0;
 
-                if (originalProc->modified) {
-                    if (originalProc->fileMapped) {
-                        originalProc->modified = false;
-                        if (isO) {
-                            cout << " FOUT" << endl;
+                    if (originalProc->modified) {
+                        if (originalProc->fileMapped) {
+                            originalProc->modified = false;
+                            if (isO) {
+                                cout << " FOUT" << endl;
+                            }
+                            procs.at(originalPid)->fouts++;
+                        } else {
+                            originalProc->modified = false;
+                            originalProc->pagedOut = true;
+                            if (isO) {
+                                cout << " OUT" << endl;
+                            }
+                            procs.at(originalPid)->outs++;
                         }
-                        procs.at(originalPid)->fouts++;
-                    } else {
-                        originalProc->modified = false;
-                        originalProc->pagedOut = true;
-                        if (isO) {
-                            cout << " OUT" << endl;
-                        }
-                        procs.at(originalPid)->outs++;
                     }
                 }
+
+                if (pte->pagedOut) {
+                    if (isO) {
+                        cout << " IN" << endl;
+                    }
+                    curProc->ins++;
+                } else if (pte->fileMapped) {
+                    if (isO) {
+                        cout << " FIN" << endl;
+                    }
+                    curProc->fins++;
+                } else {
+                    if (isO) {
+                        cout << " ZERO" << endl;
+                    }
+                    curProc->zeros++;
+                }
+
+                if (isO) {
+                    cout << " MAP " << newFrame->frameNum << endl;
+                }
+                curProc->maps++;
+
+                newFrame->pid = curProc->getPID();
+                newFrame->vpage = curInstr.id;
+                newFrame->age = 0;
+
+                pte->pageFrameNumber = newFrame->frameNum;
+                pte->present = 1;
+
             }
 
-            if (pte->pagedOut) {
-                if (isO) {
-                    cout << " IN" << endl;
+            pte->referenced = 1;
+
+            // check write protection
+            if (curInstr.operation == 'w') {
+                if (pte->writeProtected) {
+                    if (isO) {
+                        cout << " SEGPROT" << endl;
+                    }
+                    curProc->segprot++;
+                } else {
+                    pte->modified = 1;
                 }
-                curProc->ins++;
-            } else if (pte->fileMapped) {
-                if (isO) {
-                    cout << " FIN" << endl;
-                }
-                curProc->fins++;
-            } else {
-                if (isO) {
-                    cout << " ZERO" << endl;
-                }
-                curProc->zeros++;
             }
-
-            if (isO) {
-                cout << " MAP " << newFrame->frameNum << endl;
-            }
-            curProc->maps++;
-
-            newFrame->pid = curProc->getPID();
-            newFrame->vpage = curInstr.id;
-            newFrame->age = 0;
-
-            pte->pageFrameNumber = newFrame->frameNum;
-            pte->present = 1;
-
+            // simulate instruction execution by hardware by updating the R/M PTE bits
         }
-
-        pte->referenced = 1;
-
-        // check write protection
-        if (curInstr.operation == 'w') {
-            if (pte->writeProtected) {
-                if (isO) {
-                    cout << " SEGPROT" << endl;
-                }
-                curProc->segprot++;
-            } else {
-                pte->modified = 1;
-            }
-        }
-
-        // simulate instruction execution by hardware by updating the R/M PTE bits
 
         // for debug
-//        cout << "FT:";
-//        for (int i = 0; i < 16; i++) {
-//            if (frameTable.frameTable[i].pid == -1) {
-//                cout << " *";
-//            } else {
-//                cout << " " << frameTable.frameTable[i].pid << ":" << frameTable.frameTable[i].vpage <<
-//                ":" << procs.at(frameTable.frameTable[i].pid)->pageTable.PTEtable[frameTable.frameTable[i].vpage].referenced;
-//            }
-//        }
-//        cout << endl;
-
-//        for (int i = 0; i < procs.size(); i++) {
-//            cout << "PT[" << i << "]:" ;
-//            for (int j = 0; j < NUM_OF_PAGES; j++) {
-//                if (procs.at(i)->pageTable.PTEtable[j].present == 1) {
-//                    cout << " " << j << ":";
-//
-//                    if (procs.at(i)->pageTable.PTEtable[j].referenced == 1) {
-//                        cout << "R";
-//                    } else {
-//                        cout << "-";
-//                    }
-//
-//                    if (procs.at(i)->pageTable.PTEtable[j].modified == 1) {
-//                        cout << "M";
-//                    } else {
-//                        cout << "-";
-//                    }
-//
-//                    if (procs.at(i)->pageTable.PTEtable[j].pagedOut == 1) {
-//                        cout << "S";
-//                    } else {
-//                        cout << "-";
-//                    }
-//
-//                } else {
-//                    if (procs.at(i)->pageTable.PTEtable[j].pagedOut == 1) {
-//                        cout << " #";
-//                    } else {
-//                        cout << " *";
-//                    }
-//                }
-//            }
-//            cout << endl;
-//        }
-
-
+        //printStatistics(true, true, false, 16);
         idx++;
     }
 }

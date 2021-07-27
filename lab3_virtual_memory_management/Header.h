@@ -52,7 +52,6 @@ struct Frame {
     int pid;
     int vpage;
     bool isFree = true;
-    bool isVictim = false;
     unsigned long age;
     unsigned long timeOfLastUse;
 };
