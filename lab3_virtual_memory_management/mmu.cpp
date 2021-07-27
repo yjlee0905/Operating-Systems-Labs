@@ -25,6 +25,7 @@ vector<int> readRandomNums(string fileName);
 Pager* pager;
 frame_t frameTable;
 deque<Frame*> freeList;
+bool isVictim = false;
 
 vector<Process*> procs;
 vector<Instruction> instructions;
@@ -169,7 +170,6 @@ void simulation(bool isO) {
                     curFrame->pid = -1;
                     curFrame->vpage = -1;
                     curFrame->isFree = true;
-                    curFrame->isVictim = false;
                     curFrame->age = 0;
                     curFrame->timeOfLastUse = 0;
 
@@ -230,7 +230,7 @@ void simulation(bool isO) {
             // see general outline in MM-slides under Lab3 header and writeup below
             // see whether and how to bring in the content of the access page.
 
-            if (newFrame->isVictim) {
+            if (isVictim) {
                 if (isO) {
                     cout << " UNMAP " << newFrame->pid << ":" << newFrame->vpage << endl;
                 }
@@ -361,10 +361,12 @@ void simulation(bool isO) {
 
 Frame* getFrame(Pager* pager) {
     if (freeList.size() == 0) {
+        isVictim = true;
         return pager->selectVictimFrame(frameTable, procs);
     } else {
         Frame* frame = freeList.front();
         freeList.pop_front();
+        isVictim = false;
         return frame;
     }
 }
@@ -453,7 +455,6 @@ void initFrameTables(int frameSize, frame_t& frameTable, deque<Frame*>& freeList
         frameTable.frameTable[i].pid = -1;
         frameTable.frameTable[i].vpage = -1;
         frameTable.frameTable[i].isFree = true;
-        frameTable.frameTable[i].isVictim = false;
         frameTable.frameTable[i].age = 0;
         frameTable.frameTable[i].timeOfLastUse = 0; // TODO -1?
 

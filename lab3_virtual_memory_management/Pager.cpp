@@ -23,7 +23,6 @@ Frame* FIFOpager::selectVictimFrame(frame_t& frameTable, vector<Process*>& procs
     if (hand == this->size) {
         hand = 0;
     }
-    selectedVictim->isVictim = true;
     return selectedVictim;
 }
 
@@ -43,7 +42,6 @@ int RandomPager::getRandom() {
 
 Frame* RandomPager::selectVictimFrame(frame_t &frameTable, vector<Process*>& procs) {
     int idx = getRandom(); // TODO size
-    frameTable.frameTable[idx].isVictim = true;
     return &frameTable.frameTable[idx];
 }
 
@@ -72,7 +70,6 @@ Frame* ClockPager::selectVictimFrame(frame_t &frameTable, vector<Process*>& proc
             //cout << "!!!!! check[" << cnt << "] " << curFrame->pid << ":" << curFrame->vpage << ":" << curPage->referenced << "   ";
             isSearchingVictim = true;
             selectedVictim = &frameTable.frameTable[curPage->pageFrameNumber];
-            selectedVictim->isVictim = true;
             hand++;
             if (hand == size) { hand = 0; }
             curFrame = &frameTable.frameTable[hand];
@@ -114,7 +111,6 @@ Frame* NRUpager::selectVictimFrame(frame_t &frameTable, vector<Process*>& procs)
     for (int i = 0; i < 4; i++) {
         if (classes[i] != -1) {
             selectedVictim = &frameTable.frameTable[classes[i]];
-            selectedVictim->isVictim = true;
             hand = selectedVictim->frameNum + 1;
             if (hand == size) {
                 hand = 0;
@@ -163,7 +159,6 @@ Frame* AgingPager::selectVictimFrame(frame_t &frameTable, vector<Process *> &pro
     if (hand == size) {
         hand = 0;
     }
-    selectedVictim->isVictim = true;
     return selectedVictim;
 }
 
@@ -193,7 +188,6 @@ Frame* WorkingSetPager::selectVictimFrame(frame_t &frameTable, vector<Process *>
                 hand = selectedVictim->frameNum + 1;
                 if (hand == size) {hand = 0;}
                 selectedVictim = curFrame;
-                selectedVictim->isVictim = true;
                 return selectedVictim;
             }
 
@@ -227,6 +221,5 @@ Frame* WorkingSetPager::selectVictimFrame(frame_t &frameTable, vector<Process *>
 
     hand = selectedVictim->frameNum + 1;
     if (hand == size) {hand = 0;}
-    selectedVictim->isVictim = true;
     return selectedVictim;
 }
