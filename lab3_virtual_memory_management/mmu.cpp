@@ -374,10 +374,10 @@ void printStatistics(bool isP, bool isF, bool isS, int pageFrameNum) {
     // page table
     if (isP) {
         for (int i = 0; i < procs.size(); i++) {
-            cout << "PT[" << i << "]:" ;
+            cout << "PT[" << i << "]: " ;
             for (int j = 0; j < NUM_OF_PAGES; j++) {
                 if (procs.at(i)->pageTable.PTEtable[j].present == 1) {
-                    cout << " " << j << ":";
+                    cout << j << ":";
 
                     if (procs.at(i)->pageTable.PTEtable[j].referenced == 1) {
                         cout << "R";
@@ -397,11 +397,13 @@ void printStatistics(bool isP, bool isF, bool isS, int pageFrameNum) {
                         cout << "-";
                     }
 
+                    cout << " ";
+
                 } else {
                     if (procs.at(i)->pageTable.PTEtable[j].pagedOut == 1) {
-                        cout << " #";
+                        cout << "# ";
                     } else {
-                        cout << " *";
+                        cout << "* ";
                     }
                 }
             }
@@ -411,12 +413,12 @@ void printStatistics(bool isP, bool isF, bool isS, int pageFrameNum) {
 
     // frame table
     if (isF) {
-        cout << "FT:";
+        cout << "FT: ";
         for (int i = 0; i < pageFrameNum; i++) {
             if (frameTable.frameTable[i].pid == -1) {
-                cout << " *";
+                cout << "* ";
             } else {
-                cout << " " << frameTable.frameTable[i].pid << ":" << frameTable.frameTable[i].vpage;
+                cout << frameTable.frameTable[i].pid << ":" << frameTable.frameTable[i].vpage << " ";
             }
         }
         cout << endl;
