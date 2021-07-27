@@ -61,8 +61,8 @@ typedef struct {
 } frame_t;
 
 struct VMA {
-    unsigned int startingVirtualPage:7; // TODO check 128 bit?
-    unsigned int endingVirtualPage:7;
+    int startingVirtualPage;
+    int endingVirtualPage;
     unsigned int writeProtected:1;
     unsigned int fileMapped:1;
 };

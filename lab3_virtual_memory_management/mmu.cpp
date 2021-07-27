@@ -140,7 +140,7 @@ void simulation(bool isO) {
 
         // handle special case of "c" and "e" instruction
         if (curInstr.operation == 'c') {
-            // set current process
+            // change current process
             for (int i = 0; i < procs.size(); i++) {
                 if (procs.at(i)->getPID() == curInstr.id) {
                     curProc = procs.at(i);
@@ -153,13 +153,13 @@ void simulation(bool isO) {
             processExits++;
 
             for (int i = 0; i < NUM_OF_PAGES; i++) {
-                PTE* entry = &procs.at(curInstr.id)->pageTable.PTEtable[i];
+                PTE* entry = &curProc->pageTable.PTEtable[i];
                 if (entry->present) {
                     Frame* curFrame = &frameTable.frameTable[entry->pageFrameNumber];
                     if (isO) {
                         cout << " UNMAP " << curFrame->pid << ":" << curFrame->vpage << endl;
                     }
-                    procs.at(curInstr.id)->unmaps++;
+                    curProc->unmaps++;
 
                     curFrame->pid = -1;
                     curFrame->vpage = -1;
@@ -171,7 +171,7 @@ void simulation(bool isO) {
                         if (isO) {
                             cout << " FOUT" << endl;
                         }
-                        procs.at(curInstr.id)->fouts++;
+                        curProc->fouts++;
                     }
 
                     freeList.push_back(curFrame);
@@ -215,6 +215,8 @@ void simulation(bool isO) {
                 }
 
                 Frame* newFrame = getFrame(pager);
+                pte->pageFrameNumber = newFrame->frameNum;
+                pte->present = 1;
 
                 // figure out if/what to do with old frame if it was mapped
                 // see general outline in MM-slides under Lab3 header and writeup below
@@ -278,9 +280,6 @@ void simulation(bool isO) {
                 newFrame->vpage = curInstr.id;
                 newFrame->age = 0;
                 newFrame->timeOfLastUse = 0;
-
-                pte->pageFrameNumber = newFrame->frameNum;
-                pte->present = 1;
 
             }
 
