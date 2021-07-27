@@ -12,7 +12,7 @@ using namespace std;
 
 class Process {
 private:
-    int pid; // TODO check if necessary
+    int pid;
     vector<VMA> VMAs;
 
 public:

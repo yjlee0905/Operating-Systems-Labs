@@ -48,35 +48,34 @@ Frame* RandomPager::selectVictimFrame(frame_t &frameTable, vector<Process*>& pro
 }
 
 ClockPager::ClockPager(int size, frame_t& frameTable) : Pager(size) {
-    //this->hand = 0;
-    this->cnt = 0; // hand
+    this->hand = 0;
     this->size = size;
-    this->head = &frameTable.frameTable[0]; // curFrame
+    this->curFrame = &frameTable.frameTable[0];
 }
 
 Frame* ClockPager::selectVictimFrame(frame_t &frameTable, vector<Process*>& procs) {
     bool isSearchingVictim = false;
 
     Frame* selectedVictim;
-    PTE* curPage = &procs.at(head->pid)->pageTable.PTEtable[head->vpage];
+    PTE* curPage = &procs.at(curFrame->pid)->pageTable.PTEtable[curFrame->vpage];
 
     while (!isSearchingVictim) {
         if (curPage->referenced == 1) {
-            //cout << "check[" << cnt << "] " << head->pid << ":" << head->vpage << ":" << curPage->referenced << "   ";
+            //cout << "check[" << cnt << "] " << curFrame->pid << ":" << curFrame->vpage << ":" << curPage->referenced << "   ";
             curPage->referenced = 0;
-            cnt++;
-            if (cnt == size) { cnt = 0; }
-            head = &frameTable.frameTable[cnt];
-            curPage = &procs.at(head->pid)->pageTable.PTEtable[head->vpage];
+            hand++;
+            if (hand == size) { hand = 0; }
+            curFrame = &frameTable.frameTable[hand];
+            curPage = &procs.at(curFrame->pid)->pageTable.PTEtable[curFrame->vpage];
 
         } else if (curPage->referenced == 0) {
-            //cout << "!!!!! check[" << cnt << "] " << head->pid << ":" << head->vpage << ":" << curPage->referenced << "   ";
+            //cout << "!!!!! check[" << cnt << "] " << curFrame->pid << ":" << curFrame->vpage << ":" << curPage->referenced << "   ";
             isSearchingVictim = true;
             selectedVictim = &frameTable.frameTable[curPage->pageFrameNumber];
             selectedVictim->isVictim = true;
-            cnt++;
-            if (cnt == size) { cnt = 0; }
-            head = &frameTable.frameTable[cnt];
+            hand++;
+            if (hand == size) { hand = 0; }
+            curFrame = &frameTable.frameTable[hand];
             return selectedVictim;
         }
     }
