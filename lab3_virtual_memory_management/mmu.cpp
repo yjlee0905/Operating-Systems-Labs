@@ -36,8 +36,6 @@ unsigned long long instCount_RW = 0;
 unsigned long ctxSwitches = 0;
 unsigned long processExits = 0;
 
-// TODO check can move to RR algo
-
 int main(int argc, char* argv[]) {
     int c;
     int pageFrameNum; // will be set through input
@@ -143,14 +141,19 @@ void simulation(bool isO) {
         // handle special case of "c" and "e" instruction
         if (curInstr.operation == 'c') {
             // set current process
-            curProc = procs[curInstr.id];
+            for (int i = 0; i < procs.size(); i++) {
+                if (procs.at(i)->getPID() == curInstr.id) {
+                    curProc = procs.at(i);
+                    break;
+                }
+            }
             ctxSwitches++;
         } else if (curInstr.operation == 'e') {
             cout << "EXIT current process " << curInstr.id << endl;
             processExits++;
 
             for (int i = 0; i < NUM_OF_PAGES; i++) {
-                PTE* entry = &procs[curInstr.id]->pageTable.PTEtable[i];
+                PTE* entry = &procs.at(curInstr.id)->pageTable.PTEtable[i];
                 if (entry->present) {
                     Frame* curFrame = &frameTable.frameTable[entry->pageFrameNumber];
                     if (isO) {
@@ -316,7 +319,6 @@ Frame* getFrame(Pager* pager) {
 }
 
 void printStatistics(bool isP, bool isF, bool isS, int pageFrameNum) {
-    // TODO unsigned long long
     // page table
     if (isP) {
         for (int i = 0; i < procs.size(); i++) {
@@ -387,7 +389,7 @@ void printStatistics(bool isP, bool isF, bool isS, int pageFrameNum) {
 
         // summary output
         printf("TOTALCOST %lu %lu %lu %llu %lu\n",
-               instCount, ctxSwitches, processExits, totalCost, sizeof(PTE)); // TODO sizeof(pte_t)
+               instCount, ctxSwitches, processExits, totalCost, sizeof(PTE));
 
     }
 }
@@ -439,7 +441,6 @@ void initProcsAndInstructions(string fileName) {
                     int fileMapped;
 
                     sscanf(copiedLine, "%d %d %d %d", &startingVirtualPage, &endingVirtualPage, &writeProtected, &fileMapped);
-                    //in >> startingVirtualPage >> endingVirtualPage >> writeProtected >> fileMapped;
                     VMA newVMA;
                     newVMA.startingVirtualPage = startingVirtualPage;
                     newVMA.endingVirtualPage = endingVirtualPage;
@@ -449,7 +450,6 @@ void initProcsAndInstructions(string fileName) {
                     VMAs.push_back(newVMA);
                 }
 
-                // TODO check *
                 Process *newProc = new Process(parsedProcCnt, VMAs);
                 procs.push_back(newProc);
                 parsedProcCnt++;
@@ -470,7 +470,6 @@ void initProcsAndInstructions(string fileName) {
     }
 }
 
-// TODO change to read only when RR algorithm
 vector<int> readRandomNums(string fileName) {
     vector<int> randomNums; // max : 4611686018427387903(built as 64-bit target), 1073741823(built as 32-bit target)
 

@@ -25,7 +25,7 @@ Process::Process(int pid, vector<VMA> VMAs){
         this->pageTable.PTEtable[i].modified = 0;
         this->pageTable.PTEtable[i].writeProtected = 0;
         this->pageTable.PTEtable[i].pagedOut = 0;
-        this->pageTable.PTEtable[i].pageFrameNumber = 0; // TODO check deduction 5 pts
+        this->pageTable.PTEtable[i].pageFrameNumber = 0;
         this->pageTable.PTEtable[i].fileMapped = 0;
         this->pageTable.PTEtable[i].notHole = 0;
         this->pageTable.PTEtable[i].checkedHole = 0;
