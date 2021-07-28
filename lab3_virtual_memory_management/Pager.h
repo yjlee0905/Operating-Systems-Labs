@@ -44,7 +44,6 @@ class ClockPager : public Pager {
 private:
     int hand;
     int size;
-    Frame* curFrame;
 public:
     ClockPager(int size, frame_t& frameTable);
     Frame* selectVictimFrame(frame_t& frameTable, vector<Process*>& procs);

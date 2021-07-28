@@ -48,13 +48,13 @@ Frame* RandomPager::selectVictimFrame(frame_t &frameTable, vector<Process*>& pro
 ClockPager::ClockPager(int size, frame_t& frameTable) : Pager(size) {
     this->hand = 0;
     this->size = size;
-    this->curFrame = &frameTable.frameTable[0];
 }
 
 Frame* ClockPager::selectVictimFrame(frame_t &frameTable, vector<Process*>& procs) {
     bool isSearchingVictim = false;
 
     Frame* selectedVictim;
+    Frame* curFrame = &frameTable.frameTable[hand];
     PTE* curPage = &procs.at(curFrame->pid)->pageTable.PTEtable[curFrame->vpage];
 
     while (!isSearchingVictim) {
@@ -72,7 +72,6 @@ Frame* ClockPager::selectVictimFrame(frame_t &frameTable, vector<Process*>& proc
             selectedVictim = &frameTable.frameTable[curPage->pageFrameNumber];
             hand++;
             if (hand == size) { hand = 0; }
-            curFrame = &frameTable.frameTable[hand];
             return selectedVictim;
         }
     }
