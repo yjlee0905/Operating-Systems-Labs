@@ -20,6 +20,7 @@ Frame* getFrame(Pager* pager);
 void printStatistics(bool isP, bool isF, bool isS, int pageFrameNum);
 void initFrameTables(int frameSize, frame_t& frameTable, deque<Frame*>& freeList);
 void initProcsAndInstructions(string fileName);
+Instruction getInstruction();
 vector<int> readRandomNums(string fileName);
 
 Pager* pager;
@@ -27,8 +28,9 @@ frame_t frameTable;
 deque<Frame*> freeList;
 bool isVictim = false;
 
+ifstream in;
+
 vector<Process*> procs;
-vector<Instruction> instructions;
 
 // summary
 unsigned long instCount = 0;
@@ -132,8 +134,26 @@ int main(int argc, char* argv[]) {
 void simulation(bool isO) {
     int idx = 0;
     Process* curProc;
-    while (idx < instructions.size()) {
-        Instruction curInstr = instructions.at(idx);
+
+    string line;
+    Instruction curInstr;
+    while (getline(in, line)) {
+        if (line.find("#") == 0) continue;
+        else {
+            char* copiedLine = new char[line.size()+1];
+            copy(line.begin(), line.end(), copiedLine);
+            copiedLine[line.size()] = '\0';
+
+            sscanf(copiedLine, "%c %d", &curInstr.operation, &curInstr.id);
+
+            //cout << curInstr.operation << " : " << curInstr.id << endl;
+
+            instCount++;
+            if (curInstr.operation != 'c' && curInstr.operation != 'e') {
+                instCount_RW++;
+            }
+        }
+
         if (isO) {
             cout << idx << ": ==> " << curInstr.operation << " " << curInstr.id << endl;
         }
@@ -316,6 +336,7 @@ void simulation(bool isO) {
         //printStatistics(true, true, false, 16);
         idx++;
     }
+    in.close();
 }
 
 Frame* getFrame(Pager* pager) {
@@ -420,7 +441,6 @@ void initFrameTables(int frameSize, frame_t& frameTable, deque<Frame*>& freeList
 }
 
 void initProcsAndInstructions(string fileName) {
-    ifstream in;
     in.open(fileName);
     if (!in) {
         cerr << "Cannot open in file!" << endl;
@@ -463,22 +483,53 @@ void initProcsAndInstructions(string fileName) {
                 Process *newProc = new Process(parsedProcCnt, VMAs);
                 procs.push_back(newProc);
                 parsedProcCnt++;
-            } else { // read instructions
-                Instruction newInstr;
-                char * copiedLine = new char[line.size() + 1];
-                copy(line.begin(), line.end(), copiedLine);
-                copiedLine[line.size()] = '\0';
 
-                sscanf(copiedLine, "%c %d", &newInstr.operation, &newInstr.id);
-                instCount++;
-                if (newInstr.operation != 'c' && newInstr.operation != 'e') {
-                    instCount_RW++;
+                if (procCnt == parsedProcCnt) {
+                    break;
                 }
-                instructions.push_back(newInstr);
             }
+
+//            else { // read instructions
+//                Instruction newInstr;
+//                char * copiedLine = new char[line.size() + 1];
+//                copy(line.begin(), line.end(), copiedLine);
+//                copiedLine[line.size()] = '\0';
+//
+//                sscanf(copiedLine, "%c %d", &newInstr.operation, &newInstr.id);
+//                instCount++;
+//                if (newInstr.operation != 'c' && newInstr.operation != 'e') {
+//                    instCount_RW++;
+//                }
+//                instructions.push_back(newInstr);
+//            }
         }
     }
 }
+
+//Instruction getInstruction() {
+//    string line;
+//    Instruction instr;
+//    while (getline(in, line)) {
+//        if (!(line.find("#") == 0)) {
+//            char* copiedLine = new char[line.size()+1];
+//            copy(line.begin(), line.end(), copiedLine);
+//            copiedLine[line.size()] = '\0';
+//
+//            sscanf(copiedLine, "%c %d", &instr.operation, &instr.id);
+//
+//            instCount++;
+//            if (instr.operation != 'c' && instr.operation != 'e') {
+//                instCount_RW++;
+//            }
+//            return instr;
+//        }
+//    }
+//
+//    instr.operation = 'f';
+//    instr.id = -1;
+//
+//    return instr;
+//}
 
 vector<int> readRandomNums(string fileName) {
     vector<int> randomNums; // max : 4611686018427387903(built as 64-bit target), 1073741823(built as 32-bit target)
