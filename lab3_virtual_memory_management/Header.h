@@ -52,8 +52,8 @@ struct Frame {
     int pid;
     int vpage;
     bool isFree = true;
-    unsigned long age;
-    unsigned long timeOfLastUse;
+    unsigned long long age;
+    unsigned long long timeOfLastUse;
 };
 
 typedef struct {
@@ -69,7 +69,7 @@ struct VMA {
 
 struct Instruction {
     char operation;
-    int id; // r,w : id, c, e: procid
+    int id; // r,w : id, c,e: procid
 };
 
 #endif //OPERATING_SYSTEMS_LABS_HEADER_H

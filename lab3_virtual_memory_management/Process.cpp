@@ -18,7 +18,6 @@ Process::Process(int pid, vector<VMA> VMAs){
     this->segv = 0;
     this->segprot = 0;
 
-    // TODO change PTEtable initialization
     for (int i = 0; i < NUM_OF_PAGES; i++) {
         this->pageTable.PTEtable[i].present = 0;
         this->pageTable.PTEtable[i].referenced = 0;

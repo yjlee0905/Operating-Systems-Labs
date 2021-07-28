@@ -35,6 +35,7 @@ unsigned long instCount = 0;
 unsigned long long instCount_RW = 0;
 unsigned long ctxSwitches = 0;
 unsigned long processExits = 0;
+unsigned long long totalCost = 0;
 
 int main(int argc, char* argv[]) {
     int c;
@@ -160,6 +161,7 @@ void simulation(bool isO) {
                         cout << " UNMAP " << curFrame->pid << ":" << curFrame->vpage << endl;
                     }
                     curProc->unmaps++;
+                    totalCost += COST_UNMAPS;
 
                     curFrame->pid = -1;
                     curFrame->vpage = -1;
@@ -172,6 +174,7 @@ void simulation(bool isO) {
                             cout << " FOUT" << endl;
                         }
                         curProc->fouts++;
+                        totalCost += COST_FOUTS;
                     }
 
                     freeList.push_back(curFrame);
@@ -210,6 +213,7 @@ void simulation(bool isO) {
                         cout << " SEGV" << endl;
                     }
                     curProc->segv++;
+                    totalCost += COST_SEGV;
                     idx++;
                     continue;
                 }
@@ -227,6 +231,7 @@ void simulation(bool isO) {
                         cout << " UNMAP " << newFrame->pid << ":" << newFrame->vpage << endl;
                     }
                     procs.at(newFrame->pid)->unmaps++;
+                    totalCost += COST_UNMAPS;
 
                     int originalPid = newFrame->pid;
                     int originalVpage = newFrame->vpage;
@@ -240,6 +245,7 @@ void simulation(bool isO) {
                                 cout << " FOUT" << endl;
                             }
                             procs.at(originalPid)->fouts++;
+                            totalCost += COST_FOUTS;
 
                             originalProc->modified = false;
                         } else {
@@ -247,6 +253,7 @@ void simulation(bool isO) {
                                 cout << " OUT" << endl;
                             }
                             procs.at(originalPid)->outs++;
+                            totalCost += COST_OUTS;
 
                             originalProc->modified = false;
                             originalProc->pagedOut = true;
@@ -259,22 +266,26 @@ void simulation(bool isO) {
                         cout << " IN" << endl;
                     }
                     curProc->ins++;
+                    totalCost += COST_INS;
                 } else if (pte->fileMapped) {
                     if (isO) {
                         cout << " FIN" << endl;
                     }
                     curProc->fins++;
+                    totalCost += COST_FINS;
                 } else {
                     if (isO) {
                         cout << " ZERO" << endl;
                     }
                     curProc->zeros++;
+                    totalCost += COST_ZEROS;
                 }
 
                 if (isO) {
                     cout << " MAP " << newFrame->frameNum << endl;
                 }
                 curProc->maps++;
+                totalCost += COST_MAPS;
 
                 newFrame->pid = curProc->getPID();
                 newFrame->vpage = curInstr.id;
@@ -292,6 +303,7 @@ void simulation(bool isO) {
                         cout << " SEGPROT" << endl;
                     }
                     curProc->segprot++;
+                    totalCost += COST_SEGPROT;
                 } else {
                     pte->modified = 1;
                 }
@@ -372,7 +384,6 @@ void printStatistics(bool isP, bool isF, bool isS, int pageFrameNum) {
     }
 
     if (isS) {
-        unsigned long long totalCost = 0;
 
         //per process output
         for (int i = 0; i < procs.size(); i++) {
@@ -380,8 +391,8 @@ void printStatistics(bool isP, bool isF, bool isS, int pageFrameNum) {
                    procs.at(i)->getPID(),
                    procs.at(i)->unmaps, procs.at(i)->maps, procs.at(i)->ins, procs.at(i)->outs,
                    procs.at(i)->fins, procs.at(i)->fouts, procs.at(i)->zeros, procs.at(i)->segv, procs.at(i)->segprot);
-            totalCost += COST_MAPS * procs.at(i)->maps + COST_UNMAPS * procs.at(i)->unmaps + COST_INS * procs.at(i)->ins + COST_OUTS * procs.at(i)->outs
-                         + COST_FINS * procs.at(i)->fins + COST_FOUTS * procs.at(i)->fouts + COST_ZEROS * procs.at(i)->zeros + COST_SEGV * procs.at(i)->segv + COST_SEGPROT * procs.at(i)->segprot;
+//            totalCost += COST_MAPS * procs.at(i)->maps + COST_UNMAPS * procs.at(i)->unmaps + COST_INS * procs.at(i)->ins + COST_OUTS * procs.at(i)->outs
+//                         + COST_FINS * procs.at(i)->fins + COST_FOUTS * procs.at(i)->fouts + COST_ZEROS * procs.at(i)->zeros + COST_SEGV * procs.at(i)->segv + COST_SEGPROT * procs.at(i)->segprot;
         }
 
         totalCost += COST_RW_INSTR * instCount_RW + COST_CTX_SWITCHES * ctxSwitches + COST_PROC_EXITS * processExits;
@@ -403,8 +414,7 @@ void initFrameTables(int frameSize, frame_t& frameTable, deque<Frame*>& freeList
         frameTable.frameTable[i].age = 0;
         frameTable.frameTable[i].timeOfLastUse = 0; // TODO -1?
 
-        Frame* frame = &frameTable.frameTable[i];
-        freeList.push_back(frame);
+        freeList.push_back(&frameTable.frameTable[i]);
     }
 }
 
