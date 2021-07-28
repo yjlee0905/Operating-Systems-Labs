@@ -51,7 +51,7 @@ struct Frame {
     int frameNum;
     int pid;
     int vpage;
-    bool isFree = true;
+    bool isUsing = false;
     unsigned long long age;
     unsigned long long timeOfLastUse;
 };

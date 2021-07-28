@@ -165,7 +165,7 @@ void simulation(bool isO) {
 
                     curFrame->pid = -1;
                     curFrame->vpage = -1;
-                    curFrame->isFree = true;
+                    curFrame->isUsing = false;
                     curFrame->age = 0;
                     curFrame->timeOfLastUse = 0;
 
@@ -289,6 +289,7 @@ void simulation(bool isO) {
 
                 newFrame->pid = curProc->getPID();
                 newFrame->vpage = curInstr.id;
+                newFrame->isUsing = true;
                 newFrame->age = 0;
                 newFrame->timeOfLastUse = 0;
 
@@ -374,7 +375,7 @@ void printStatistics(bool isP, bool isF, bool isS, int pageFrameNum) {
     if (isF) {
         cout << "FT: ";
         for (int i = 0; i < pageFrameNum; i++) {
-            if (frameTable.frameTable[i].pid == -1) {
+            if (frameTable.frameTable[i].isUsing == false) {
                 cout << "* ";
             } else {
                 cout << frameTable.frameTable[i].pid << ":" << frameTable.frameTable[i].vpage << " ";
@@ -410,7 +411,7 @@ void initFrameTables(int frameSize, frame_t& frameTable, deque<Frame*>& freeList
         frameTable.frameTable[i].frameNum = i;
         frameTable.frameTable[i].pid = -1;
         frameTable.frameTable[i].vpage = -1;
-        frameTable.frameTable[i].isFree = true;
+        frameTable.frameTable[i].isUsing = false;
         frameTable.frameTable[i].age = 0;
         frameTable.frameTable[i].timeOfLastUse = 0; // TODO -1?
 

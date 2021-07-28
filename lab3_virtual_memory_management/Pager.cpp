@@ -95,10 +95,10 @@ Frame* NRUpager::selectVictimFrame(frame_t &frameTable, vector<Process*>& procs)
     for (int i = 0; i < size; i++) {
         Frame* curFrame = &frameTable.frameTable[hand];
         PTE* curPage = &procs.at(curFrame->pid)->pageTable.PTEtable[curFrame->vpage];
-        int classId = curPage->referenced * 2 + curPage->modified * 1;
+        int classNum = curPage->referenced * 2 + curPage->modified * 1;
 
-        if (classes[classId] == -1) {
-            classes[classId] = curFrame->frameNum;
+        if (classes[classNum] == -1) {
+            classes[classNum] = curFrame->frameNum;
         }
 
         hand++;
@@ -121,7 +121,7 @@ Frame* NRUpager::selectVictimFrame(frame_t &frameTable, vector<Process*>& procs)
 
     if (timer >= TIME_LIMIT) {
         for (int i = 0; i < size; i++) {
-            if (frameTable.frameTable[i].pid != -1) {
+            if (frameTable.frameTable[i].isUsing == true) {
                 procs.at(frameTable.frameTable[i].pid)->pageTable.PTEtable[frameTable.frameTable[i].vpage].referenced = 0;
             }
         }
