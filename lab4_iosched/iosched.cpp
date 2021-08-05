@@ -34,7 +34,8 @@ int main() {
     // simulation
     while (true) {
         // if a new I/O arrived to the system at this current time
-        if (timer == IOrequests.at(ioReqIdx)->getArrivalTime()) { // add request IO-queue
+        if ((ioReqIdx != IOrequests.size())
+            && (timer == IOrequests.at(ioReqIdx)->getArrivalTime())) { // add request IO-queue
             IOreq* newIOreq = IOrequests.at(ioReqIdx);
             ioReqIdx++;
             IOsched->addIOrequest(newIOreq);
@@ -43,11 +44,11 @@ int main() {
         }
 
         // if an IO is active and completed at this time
-        if (curIOreq && ((timer - curIOreq->start) == curIOreq->getTarget())) {
+        if (curIOreq && (head == curIOreq->getTarget())) {
             curIOreq->end = timer;
             isIOactive = false;
 
-            cout << timer << ":     " << curIOreq->getReqId() << " finish " << curIOreq->getTarget() << endl;
+            cout << timer << ":     " << curIOreq->getReqId() << " finish " << timer - curIOreq->getArrivalTime() << endl;
         }
 
         // if no IO request active now
