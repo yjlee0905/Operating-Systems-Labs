@@ -4,17 +4,28 @@
 
 #include <iostream>
 #include <fstream>
+#include <vector>
 #include "IOreq.h"
 
 using namespace std;
 
-deque<IOreq*> IOrequests;
+void initIOrequests(string fileName);
+
+vector<IOreq*> IOrequests;
 
 int main() {
     cout << "start lab4" << endl;
+    initIOrequests("/Users/yjeonlee/Desktop/Operating_Systems/Operating-Systems-Labs/lab4_iosched/inputs/input0");
+    cout << IOrequests.size() << endl;
+    for (int i = 0; i < IOrequests.size(); ++i) {
+        cout << IOrequests[i]->getReqId() << " " << IOrequests[i]->getTimestamp() << " " << IOrequests[i]->getTarget() << endl;
+    }
+    return 0;
+}
 
+void initIOrequests(string fileName) {
     ifstream in;
-    in.open("/Users/yjeonlee/Desktop/Operating_Systems/Operating-Systems-Labs/lab4_iosched/inputs/input0");
+    in.open(fileName);
     if (!in) {
         cerr << "Cannot open in file!" << endl;
         exit(1);
@@ -41,8 +52,4 @@ int main() {
     }
 
     in.close();
-
-    cout << IOrequests.size() << endl;
-    return 0;
 }
-

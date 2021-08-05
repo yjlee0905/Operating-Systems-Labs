@@ -9,12 +9,14 @@
 class IOreq {
 private:
     int reqId;
-    int timeStamp;
+    int timestamp;
     int target;
 
 public:
-    IOreq(int reqId, int timeStamp, int target);
+    IOreq(int reqId, int timestamp, int target);
+    int getReqId();
+    int getTimestamp();
+    int getTarget();
 };
-
 
 #endif //OPERATING_SYSTEMS_LABS_IOREQ_H
