@@ -38,12 +38,16 @@ int main() {
             IOreq* newIOreq = IOrequests.at(ioReqIdx);
             ioReqIdx++;
             IOsched->addIOrequest(newIOreq);
+
+            cout << timer << ":     " << newIOreq->getReqId() << " add " << newIOreq->getTarget() << endl;
         }
 
         // if an IO is active and completed at this time
-        if (isIOactive && ((timer - curIOreq->start) == curIOreq->getTarget())) {
+        if (curIOreq && ((timer - curIOreq->start) == curIOreq->getTarget())) {
             curIOreq->end = timer;
             isIOactive = false;
+
+            cout << timer << ":     " << curIOreq->getReqId() << " finish " << curIOreq->getTarget() << endl;
         }
 
         // if no IO request active now
@@ -54,6 +58,15 @@ int main() {
                 curIOreq = IOsched->getNextIOrequest();
                 curIOreq->start = timer;
                 isIOactive = true;
+
+                if (curIOreq->getTarget() > head) {
+                    direction = true;
+                } else {
+                    direction = false;
+                }
+
+                cout << timer << ":     " << curIOreq->getReqId() << " issue " << curIOreq->getTarget() << " " << head << endl;
+
             }
         }
 
@@ -62,6 +75,12 @@ int main() {
             moveHead();
         }
         timer++;
+    }
+
+    cout << IOrequests.size() << endl;
+    for (int i = 0; i < IOrequests.size(); ++i) {
+        cout << IOrequests[i]->getReqId() << " " << IOrequests[i]->getArrivalTime() << " " << IOrequests[i]->getTarget()
+        << " " << IOrequests[i]->start << " " << IOrequests[i]->end << endl;
     }
 
     cout << IOrequests.size() << endl;
