@@ -6,10 +6,12 @@
 
 IOreq::IOreq(int reqId, int timestamp, int target) {
     this->reqId = reqId;
-    this->timestamp = timestamp;
+    this->arrivalTime = timestamp;
     this->target = target;
+    this->start = -1;
+    this->end = -1;
 }
 
 int IOreq::getReqId() {return this->reqId;}
-int IOreq::getTimestamp() {return this->timestamp;}
+int IOreq::getArrivalTime() {return this->arrivalTime;}
 int IOreq::getTarget() {return this->target;}

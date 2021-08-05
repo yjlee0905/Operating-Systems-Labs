@@ -15,6 +15,8 @@ class IOscheduler {
 public:
     virtual void addIOrequest(IOreq* req) = 0;
     virtual IOreq* getNextIOrequest() = 0;
+    virtual int showNextIOreqArrivaltime() = 0;
+    virtual bool isIOqueueEmpty() = 0;
 };
 
 class FIFOiosched : public IOscheduler {
@@ -25,6 +27,8 @@ public:
     FIFOiosched();
     void addIOrequest(IOreq* req);
     IOreq* getNextIOrequest();
+    int showNextIOreqArrivaltime();
+    bool isIOqueueEmpty();
 };
 
 #endif //OPERATING_SYSTEMS_LABS_IOSCHEDULER_H

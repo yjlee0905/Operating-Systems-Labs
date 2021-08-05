@@ -9,13 +9,16 @@
 class IOreq {
 private:
     int reqId;
-    int timestamp;
+    int arrivalTime;
     int target;
 
 public:
-    IOreq(int reqId, int timestamp, int target);
+    int start;
+    int end;
+
+    IOreq(int reqId, int arrivalTime, int target);
     int getReqId();
-    int getTimestamp();
+    int getArrivalTime();
     int getTarget();
 };
 

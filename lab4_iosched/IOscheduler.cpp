@@ -18,3 +18,15 @@ IOreq* FIFOiosched::getNextIOrequest() {
     }
     return nullptr;
 }
+
+int FIFOiosched::showNextIOreqArrivaltime() {
+    if (!IOreqQ.empty()) {
+        return IOreqQ.front()->getArrivalTime();
+    }
+    return -1;
+}
+
+bool FIFOiosched::isIOqueueEmpty() {
+    if (IOreqQ.empty()) return true;
+    return false;
+}

@@ -4,23 +4,90 @@
 
 #include <iostream>
 #include <fstream>
-#include <vector>
+#include <queue>
 #include "IOreq.h"
+#include "IOscheduler.h"
 
 using namespace std;
 
+void moveHead();
+bool isAllIOreqProcessed();
 void initIOrequests(string fileName);
 
 vector<IOreq*> IOrequests;
+int ioReqIdx = 0;
+int head = 0;
+bool direction = true; // true: increment, false: decrement
+
+IOscheduler* IOsched;
 
 int main() {
-    cout << "start lab4" << endl;
+//    cout << "start lab4" << endl;
     initIOrequests("/Users/yjeonlee/Desktop/Operating_Systems/Operating-Systems-Labs/lab4_iosched/inputs/input0");
+
+    int timer = 0;
+    bool isIOactive = false;
+    IOreq* curIOreq = nullptr;
+
+    IOsched = new FIFOiosched();
+
+    // simulation
+    while (true) {
+        // if a new I/O arrived to the system at this current time
+        if (timer == IOrequests.at(ioReqIdx)->getArrivalTime()) { // add request IO-queue
+            IOreq* newIOreq = IOrequests.at(ioReqIdx);
+            ioReqIdx++;
+            IOsched->addIOrequest(newIOreq);
+        }
+
+        // if an IO is active and completed at this time
+        if (isIOactive && ((timer - curIOreq->start) == curIOreq->getTarget())) {
+            curIOreq->end = timer;
+            isIOactive = false;
+        }
+
+        // if no IO request active now
+        if (!isIOactive) {
+            if (isAllIOreqProcessed()) {
+                break;
+            } else if (!IOsched->isIOqueueEmpty()) {
+                curIOreq = IOsched->getNextIOrequest();
+                curIOreq->start = timer;
+                isIOactive = true;
+            }
+        }
+
+        // if an IO is active
+        if (isIOactive) {
+            moveHead();
+        }
+        timer++;
+    }
+
     cout << IOrequests.size() << endl;
     for (int i = 0; i < IOrequests.size(); ++i) {
-        cout << IOrequests[i]->getReqId() << " " << IOrequests[i]->getTimestamp() << " " << IOrequests[i]->getTarget() << endl;
+        cout << IOrequests[i]->getReqId() << " " << IOrequests[i]->getArrivalTime() << " " << IOrequests[i]->getTarget()
+        << " " << IOrequests[i]->start << " " << IOrequests[i]->end << endl;
     }
+
     return 0;
+}
+
+bool isAllIOreqProcessed() {
+    for (int i = 0; i < IOrequests.size(); ++i) {
+        if (IOrequests.at(i)->end == -1) {
+            return false;
+        }
+    }
+    return true;
+}
+
+void moveHead() {
+    if (direction) {
+        head++;
+    } else {
+        head--;
+    }
 }
 
 void initIOrequests(string fileName) {
