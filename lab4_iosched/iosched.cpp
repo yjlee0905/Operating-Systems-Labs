@@ -22,8 +22,7 @@ bool direction = true; // true: increment, false: decrement
 IOscheduler* IOsched;
 
 int main() {
-//    cout << "start lab4" << endl;
-    initIOrequests("/Users/yjeonlee/Desktop/Operating_Systems/Operating-Systems-Labs/lab4_iosched/inputs/input0");
+    initIOrequests("/Users/yjeonlee/Desktop/Operating_Systems/Operating-Systems-Labs/lab4_iosched/inputs/input9");
 
     int timer = 0;
     bool isIOactive = false;
@@ -78,16 +77,8 @@ int main() {
         timer++;
     }
 
-    cout << IOrequests.size() << endl;
-    for (int i = 0; i < IOrequests.size(); ++i) {
-        cout << IOrequests[i]->getReqId() << " " << IOrequests[i]->getArrivalTime() << " " << IOrequests[i]->getTarget()
-        << " " << IOrequests[i]->start << " " << IOrequests[i]->end << endl;
-    }
-
-    cout << IOrequests.size() << endl;
-    for (int i = 0; i < IOrequests.size(); ++i) {
-        cout << IOrequests[i]->getReqId() << " " << IOrequests[i]->getArrivalTime() << " " << IOrequests[i]->getTarget()
-        << " " << IOrequests[i]->start << " " << IOrequests[i]->end << endl;
+    for (int i = 0; i < IOrequests.size(); i++) {
+        printf("%5d: %5d %5d %5d\n", IOrequests.at(i)->getReqId(), IOrequests.at(i)->getArrivalTime(), IOrequests.at(i)->start, IOrequests.at(i)->end);
     }
 
     return 0;
