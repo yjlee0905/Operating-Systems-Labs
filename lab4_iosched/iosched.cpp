@@ -3,11 +3,46 @@
 //
 
 #include <iostream>
+#include <fstream>
+#include "IOreq.h"
 
 using namespace std;
 
+deque<IOreq*> IOrequests;
+
 int main() {
     cout << "start lab4" << endl;
+
+    ifstream in;
+    in.open("/Users/yjeonlee/Desktop/Operating_Systems/Operating-Systems-Labs/lab4_iosched/inputs/input0");
+    if (!in) {
+        cerr << "Cannot open in file!" << endl;
+        exit(1);
+    }
+
+    string line;
+    int cnt = 0;
+    while (getline(in, line)) {
+        if (line.find("#") == 0) continue;
+
+        // convert string to char*
+        char* copiedLine = new char[line.size()+1];
+        copy(line.begin(), line.end(), copiedLine);
+        copiedLine[line.size()] = '\0';
+
+        int timeStamp;
+        int target;
+
+        sscanf(copiedLine, "%d %d", &timeStamp, &target);
+
+        // TODO reqId
+        IOreq* ioreq = new IOreq(cnt++, timeStamp, target);
+        IOrequests.push_back(ioreq);
+    }
+
+    in.close();
+
+    cout << IOrequests.size() << endl;
     return 0;
 }
 
