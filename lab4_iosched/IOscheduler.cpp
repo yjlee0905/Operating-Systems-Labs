@@ -39,16 +39,22 @@ void SSTFiosched::addIOrequest(IOreq *req) {
 }
 
 IOreq* SSTFiosched::getNextIOrequest(int pos) {
-    IOreq* minIOreq = IOreqQ.front();
-    deque<IOreq*>::iterator deletePos = IOreqQ.begin();
-    for (deque<IOreq*>::iterator iter = IOreqQ.begin(); iter != IOreqQ.end(); iter++) {
-        if (abs(pos - minIOreq->getTarget()) > abs(pos - (*iter)->getTarget())) {
-            minIOreq = *iter;
-            deletePos = iter;
+    if (IOreqQ.size() == 1) {
+        IOreq* ioreq = IOreqQ.front();
+        IOreqQ.pop_front();
+        return ioreq;
+    }
+
+    IOreq* minIOreq = IOreqQ.at(0);
+    int offset = 0;
+    for (int i = 1; i < IOreqQ.size(); i++) {
+        if (abs(pos - minIOreq->getTarget()) > abs(pos - IOreqQ.at(i)->getTarget())) {
+            minIOreq = IOreqQ.at(i);
+            offset = i;
         }
     }
 
-    IOreqQ.erase(deletePos);
+    IOreqQ.erase(IOreqQ.begin() + offset);
     return minIOreq;
 }
 

@@ -22,13 +22,14 @@ bool direction = true; // true: increment, false: decrement
 IOscheduler* IOsched;
 
 int main() {
-    initIOrequests("/Users/yjeonlee/Desktop/Operating_Systems/Operating-Systems-Labs/lab4_iosched/inputs/input0");
+    initIOrequests("/Users/yjeonlee/Desktop/Operating_Systems/Operating-Systems-Labs/lab4_iosched/inputs/input2");
 
     int timer = 0;
     bool isIOactive = false;
     IOreq* curIOreq = nullptr;
 
     IOsched = new SSTFiosched();
+    int finishedCnt = 0;
 
     // simulation
     while (true) {
@@ -46,6 +47,7 @@ int main() {
         if (curIOreq && (head == curIOreq->getTarget())) {
             curIOreq->end = timer;
             isIOactive = false;
+            finishedCnt++;
 
             cout << timer << ":     " << curIOreq->getReqId() << " finish " << timer - curIOreq->getArrivalTime() << endl;
         }
@@ -61,8 +63,11 @@ int main() {
 
                 if (curIOreq->getTarget() > head) {
                     direction = true;
-                } else {
+                } else if (curIOreq->getTarget() < head){
                     direction = false;
+                } else {
+                    cout << "FALSE? : " << curIOreq->getReqId() << endl;
+                    continue;
                 }
 
                 cout << timer << ":     " << curIOreq->getReqId() << " issue " << curIOreq->getTarget() << " " << head << endl;
