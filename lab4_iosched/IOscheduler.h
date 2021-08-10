@@ -53,4 +53,15 @@ public:
     bool isIOqueueEmpty();
 };
 
+class CLOOKiosched : public IOscheduler {
+private:
+    deque<IOreq*> IOreqQ;
+
+public:
+    CLOOKiosched();
+    void addIOrequest(IOreq* req);
+    IOreq* getNextIOrequest(int pos, bool direction);
+    bool isIOqueueEmpty();
+};
+
 #endif //OPERATING_SYSTEMS_LABS_IOSCHEDULER_H

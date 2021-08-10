@@ -187,3 +187,57 @@ bool LOOKiosched::isIOqueueEmpty() {
     if (IOreqQ.empty()) return true;
     return false;
 }
+
+CLOOKiosched::CLOOKiosched() {}
+
+void CLOOKiosched::addIOrequest(IOreq *req) {
+    int size = IOreqQ.size();
+    for (deque<IOreq*>::iterator iter = IOreqQ.begin(); iter != IOreqQ.end(); iter++) {
+        if (req->getTarget() < (*iter)->getTarget()) {
+            IOreqQ.insert(iter, req);
+            break;
+        }
+    }
+
+    if (IOreqQ.size() == size) {
+        IOreqQ.push_back(req);
+    }
+}
+
+IOreq* CLOOKiosched::getNextIOrequest(int pos, bool direction) {
+    if (IOreqQ.back()->getTarget() <= pos) {
+        IOreq* nextIOreq = IOreqQ.front();
+        IOreqQ.pop_front();
+        return nextIOreq;
+    } else if (IOreqQ.back()->getTarget() > pos){
+        if (IOreqQ.size() == 1) {
+            IOreq* ioreq = IOreqQ.front();
+            IOreqQ.pop_front();
+            return ioreq;
+        }
+
+        IOreq* minDistReq = nullptr;
+        int minDist = INT_MAX;
+        int offset = 0;
+        for (int i = 0; i < IOreqQ.size(); i++) {
+            if (pos <= IOreqQ.at(i)->getTarget()) {
+                int dist = abs(IOreqQ.at(i)->getTarget() - pos);
+                if (dist < minDist) {
+                    minDist = dist;
+                    minDistReq = IOreqQ.at(i);
+                    offset = i;
+                }
+            }
+
+        }
+
+        IOreqQ.erase(IOreqQ.begin() + offset);
+        return minDistReq;
+    }
+
+}
+
+bool CLOOKiosched::isIOqueueEmpty() {
+    if (IOreqQ.empty()) return true;
+    return false;
+}
