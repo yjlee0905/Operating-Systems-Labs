@@ -17,6 +17,7 @@ void initIOrequests(string fileName);
 vector<IOreq*> IOrequests;
 int ioReqIdx = 0;
 int head = 0;
+int totalMovement = 0;
 bool direction = true; // true: increment, false: decrement
 
 IOscheduler* IOsched;
@@ -28,7 +29,7 @@ int main() {
     bool isIOactive = false;
     IOreq* curIOreq = nullptr;
 
-    IOsched = new CLOOKiosched();
+    IOsched = new FIFOiosched();
     int finishedCnt = 0;
 
     // simulation
@@ -82,10 +83,23 @@ int main() {
         timer++;
     }
 
+    int totalTurnaroundTime = 0;
+    int totalWaitTime = 0;
+    int maxWaitTime = -1;
     // print results
     for (int i = 0; i < IOrequests.size(); i++) {
         printf("%5d: %5d %5d %5d\n", IOrequests.at(i)->getReqId(), IOrequests.at(i)->getArrivalTime(), IOrequests.at(i)->start, IOrequests.at(i)->end);
+        totalTurnaroundTime += (IOrequests.at(i)->end - IOrequests.at(i)->getArrivalTime());
+        totalWaitTime += (IOrequests.at(i)->start - IOrequests.at(i)->getArrivalTime());
+        if (maxWaitTime < (IOrequests.at(i)->start - IOrequests.at(i)->getArrivalTime())) {
+            maxWaitTime = IOrequests.at(i)->start - IOrequests.at(i)->getArrivalTime();
+        }
     }
+
+    double avgTurnaround = (double) totalTurnaroundTime / (double) IOrequests.size();
+    double avgWaitTime = (double) totalWaitTime / (double) IOrequests.size();
+    printf("SUM: %d %d %.2lf %.2lf %d\n",
+           timer, totalMovement, avgTurnaround, avgWaitTime, maxWaitTime);
 
     return 0;
 }
@@ -106,6 +120,7 @@ void moveHead() {
     } else {
         head--;
     }
+    totalMovement++;
 }
 
 void initIOrequests(string fileName) {
