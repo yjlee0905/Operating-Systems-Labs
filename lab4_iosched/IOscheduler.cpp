@@ -85,15 +85,30 @@ IOreq* LOOKiosched::getNextIOrequest(int pos, bool direction) {
                 return ioreq;
             }
 
-            IOreq* minDistReq = IOreqQ.at(0);
+            IOreq* minDistReq = nullptr;
+            int minDist = INT_MAX;
             int offset = 0;
-            for (int i = 1; i < IOreqQ.size(); i++) {
-                if ((pos <= IOreqQ.at(i)->getTarget()) &&
-                    abs(pos - IOreqQ.at(i)->getTarget()) < abs(pos - minDistReq->getTarget())) {
-                    minDistReq = IOreqQ.at(i);
-                    offset = i;
+            for (int i = 0; i < IOreqQ.size(); i++) {
+                if (pos <= IOreqQ.at(i)->getTarget()) {
+                    int dist = abs(IOreqQ.at(i)->getTarget() - pos);
+                    if (dist < minDist) {
+                        minDist = dist;
+                        minDistReq = IOreqQ.at(i);
+                        offset = i;
+                    }
                 }
+
             }
+
+//            IOreq* minDistReq = IOreqQ.at(0);
+//            int offset = 0;
+//            for (int i = 1; i < IOreqQ.size(); i++) {
+//                if ((pos <= IOreqQ.at(i)->getTarget()) &&
+//                    abs(pos - IOreqQ.at(i)->getTarget()) < abs(pos - minDistReq->getTarget())) {
+//                    minDistReq = IOreqQ.at(i);
+//                    offset = i;
+//                }
+//            }
 
             IOreqQ.erase(IOreqQ.begin() + offset);
             return minDistReq;
@@ -111,15 +126,31 @@ IOreq* LOOKiosched::getNextIOrequest(int pos, bool direction) {
                 return ioreq;
             }
 
-            IOreq* minDistReq = IOreqQ.at(0);
+            IOreq* minDistReq = nullptr;
+            int minDist = INT_MAX;
             int offset = 0;
-            for (int i = 1; i < IOreqQ.size(); i++) {
-                if ((pos >= IOreqQ.at(i)->getTarget()) &&
-                        abs(pos - IOreqQ.at(i)->getTarget()) < abs(pos - minDistReq->getTarget())) {
-                    minDistReq = IOreqQ.at(i);
-                    offset = i;
+            for (int i = 0; i < IOreqQ.size(); i++) {
+                if (pos >= IOreqQ.at(i)->getTarget()) {
+                    int dist = abs(pos - IOreqQ.at(i)->getTarget());
+                    if (dist < minDist) {
+                        minDist = dist;
+                        minDistReq = IOreqQ.at(i);
+                        offset = i;
+                    }
                 }
+
             }
+
+
+//            IOreq* minDistReq = IOreqQ.at(0);
+//            int offset = 0;
+//            for (int i = 1; i < IOreqQ.size(); i++) {
+//                if ((pos >= IOreqQ.at(i)->getTarget()) &&
+//                        abs(pos - IOreqQ.at(i)->getTarget()) < abs(pos - minDistReq->getTarget())) {
+//                    minDistReq = IOreqQ.at(i);
+//                    offset = i;
+//                }
+//            }
 
             IOreqQ.erase(IOreqQ.begin() + offset);
             return minDistReq;
