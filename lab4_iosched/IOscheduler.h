@@ -14,7 +14,7 @@ using namespace std;
 class IOscheduler {
 public:
     virtual void addIOrequest(IOreq* req) = 0;
-    virtual IOreq* getNextIOrequest(int pos) = 0;
+    virtual IOreq* getNextIOrequest(int pos, bool direction) = 0;
     //virtual int showNextIOreqArrivaltime() = 0;
     virtual bool isIOqueueEmpty() = 0;
 };
@@ -26,7 +26,7 @@ private:
 public:
     FIFOiosched();
     void addIOrequest(IOreq* req);
-    IOreq* getNextIOrequest(int pos);
+    IOreq* getNextIOrequest(int pos, bool direction);
     //int showNextIOreqArrivaltime();
     bool isIOqueueEmpty();
 };
@@ -38,7 +38,18 @@ private:
 public:
     SSTFiosched();
     void addIOrequest(IOreq* req);
-    IOreq* getNextIOrequest(int pos);
+    IOreq* getNextIOrequest(int pos, bool direction);
+    bool isIOqueueEmpty();
+};
+
+class LOOKiosched : public IOscheduler {
+private:
+    deque<IOreq*> IOreqQ;
+
+public:
+    LOOKiosched();
+    void addIOrequest(IOreq* req);
+    IOreq* getNextIOrequest(int pos, bool direction);
     bool isIOqueueEmpty();
 };
 
