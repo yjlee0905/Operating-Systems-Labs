@@ -22,13 +22,13 @@ bool direction = true; // true: increment, false: decrement
 IOscheduler* IOsched;
 
 int main() {
-    initIOrequests("/Users/yjeonlee/Desktop/Operating_Systems/Operating-Systems-Labs/lab4_iosched/inputs/input9");
+    initIOrequests("/Users/yjeonlee/Desktop/Operating_Systems/Operating-Systems-Labs/lab4_iosched/inputs/input0");
 
     int timer = 0;
     bool isIOactive = false;
     IOreq* curIOreq = nullptr;
 
-    IOsched = new FIFOiosched();
+    IOsched = new SSTFiosched();
 
     // simulation
     while (true) {
@@ -55,7 +55,7 @@ int main() {
             if (isAllIOreqProcessed()) {
                 break;
             } else if (!IOsched->isIOqueueEmpty()) {
-                curIOreq = IOsched->getNextIOrequest();
+                curIOreq = IOsched->getNextIOrequest(head);
                 curIOreq->start = timer;
                 isIOactive = true;
 
@@ -77,6 +77,7 @@ int main() {
         timer++;
     }
 
+    // print results
     for (int i = 0; i < IOrequests.size(); i++) {
         printf("%5d: %5d %5d %5d\n", IOrequests.at(i)->getReqId(), IOrequests.at(i)->getArrivalTime(), IOrequests.at(i)->start, IOrequests.at(i)->end);
     }
@@ -85,6 +86,7 @@ int main() {
 }
 
 bool isAllIOreqProcessed() {
+    // TODO change to counter
     for (int i = 0; i < IOrequests.size(); ++i) {
         if (IOrequests.at(i)->end == -1) {
             return false;
