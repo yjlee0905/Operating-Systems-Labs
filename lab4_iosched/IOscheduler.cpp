@@ -20,13 +20,6 @@ IOreq* FIFOiosched::getNextIOrequest(int pos, bool direction) {
     return nullptr;
 }
 
-//int FIFOiosched::showNextIOreqArrivaltime() {
-//    if (!IOreqQ.empty()) {
-//        return IOreqQ.front()->getArrivalTime();
-//    }
-//    return -1;
-//}
-
 bool FIFOiosched::isIOqueueEmpty() {
     if (IOreqQ.empty()) return true;
     return false;
@@ -86,13 +79,24 @@ IOreq* LOOKiosched::getNextIOrequest(int pos, bool direction) {
             IOreqQ.pop_back();
             return nextIOreq;
         } else if (IOreqQ.back()->getTarget() > pos){
-            for (deque<IOreq*>::iterator iter = IOreqQ.begin(); iter != IOreqQ.end(); iter++) {
-                if (pos <= (*iter)->getTarget()) {
-                    IOreq* nextIOreq = *iter;
-                    IOreqQ.erase(iter);
-                    return nextIOreq;
+            if (IOreqQ.size() == 1) {
+                IOreq* ioreq = IOreqQ.front();
+                IOreqQ.pop_front();
+                return ioreq;
+            }
+
+            IOreq* minDistReq = IOreqQ.at(0);
+            int offset = 0;
+            for (int i = 1; i < IOreqQ.size(); i++) {
+                if ((pos <= IOreqQ.at(i)->getTarget()) &&
+                    abs(pos - IOreqQ.at(i)->getTarget()) < abs(pos - minDistReq->getTarget())) {
+                    minDistReq = IOreqQ.at(i);
+                    offset = i;
                 }
             }
+
+            IOreqQ.erase(IOreqQ.begin() + offset);
+            return minDistReq;
         }
     } else { // head is in direction of decrement
         if (IOreqQ.front()->getTarget() >= pos) { // change direction
@@ -110,7 +114,7 @@ IOreq* LOOKiosched::getNextIOrequest(int pos, bool direction) {
             IOreq* minDistReq = IOreqQ.at(0);
             int offset = 0;
             for (int i = 1; i < IOreqQ.size(); i++) {
-                if ((pos > IOreqQ.at(i)->getTarget()) &&
+                if ((pos >= IOreqQ.at(i)->getTarget()) &&
                         abs(pos - IOreqQ.at(i)->getTarget()) < abs(pos - minDistReq->getTarget())) {
                     minDistReq = IOreqQ.at(i);
                     offset = i;
