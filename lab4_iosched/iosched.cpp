@@ -22,7 +22,7 @@ bool direction = true; // true: increment, false: decrement
 IOscheduler* IOsched;
 
 int main() {
-    initIOrequests("/Users/yjeonlee/Desktop/Operating_Systems/Operating-Systems-Labs/lab4_iosched/inputs/input2");
+    initIOrequests("/Users/yjeonlee/Desktop/Operating_Systems/Operating-Systems-Labs/lab4_iosched/inputs/input9");
 
     int timer = 0;
     bool isIOactive = false;
@@ -50,6 +50,7 @@ int main() {
             finishedCnt++;
 
             cout << timer << ":     " << curIOreq->getReqId() << " finish " << timer - curIOreq->getArrivalTime() << endl;
+            curIOreq = nullptr;
         }
 
         // if no IO request active now
