@@ -259,18 +259,31 @@ void FLOOKiosched::addIOrequest(IOreq *req) {
 }
 
 IOreq* FLOOKiosched::getNextIOrequest(int pos, bool direction) {
-    if (direction) { // head is in direction of increment
-        if (activeQ.empty()) {
-            deque<IOreq*> tmp = activeQ;
-            activeQ = addQ;
-            addQ = tmp;
-        }
+    if (activeQ.empty()) {
+        //cout << "swap" << endl;
+        deque<IOreq*> tmp = activeQ;
+        activeQ = addQ;
+        addQ = tmp;
+    }
 
+    if (direction) { // head is in direction of increment
+
+        // TODO check LOOK and CLOOK
         if (activeQ.back()->getTarget() <= pos) {
             IOreq* nextIOreq = activeQ.back();
-            activeQ.pop_back();
+            int offset = activeQ.size() - 1;
+            for (int i = 0; i < activeQ.size(); i++) {
+                if (activeQ.at(i)->getTarget() == nextIOreq->getTarget()) {
+                    //cout << "here" << endl;
+                    nextIOreq = activeQ.at(i);
+                    offset = i;
+                    break;
+                }
+            }
+
+            activeQ.erase(activeQ.begin() + offset);
             return nextIOreq;
-        } else if (activeQ.back()->getTarget() > pos) {
+        } else {
             if (activeQ.size() == 1) {
                 IOreq* ioreq = activeQ.front();
                 activeQ.pop_front();
@@ -295,11 +308,12 @@ IOreq* FLOOKiosched::getNextIOrequest(int pos, bool direction) {
             return minDistReq;
         }
     } else { // head is in direction of decrement
-        if (activeQ.empty()) {
-            deque<IOreq*> tmp = activeQ;
-            activeQ = addQ;
-            addQ = tmp;
-        }
+//        if (activeQ.empty()) {
+//            //cout << "swap1" << endl;
+//            deque<IOreq*> tmp = activeQ;
+//            activeQ = addQ;
+//            addQ = tmp;
+//        }
 
         if (activeQ.front()->getTarget() >= pos) {
             IOreq* nextIOreq = activeQ.front();
