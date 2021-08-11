@@ -241,3 +241,97 @@ bool CLOOKiosched::isIOqueueEmpty() {
     if (IOreqQ.empty()) return true;
     return false;
 }
+
+FLOOKiosched::FLOOKiosched() {}
+
+void FLOOKiosched::addIOrequest(IOreq *req) {
+    int size = addQ.size();
+    for (deque<IOreq*>::iterator iter = addQ.begin(); iter != addQ.end(); iter++) {
+        if (req->getTarget() < (*iter)->getTarget()) {
+            addQ.insert(iter, req);
+            break;
+        }
+    }
+
+    if (addQ.size() == size) {
+        addQ.push_back(req);
+    }
+}
+
+IOreq* FLOOKiosched::getNextIOrequest(int pos, bool direction) {
+    if (direction) { // head is in direction of increment
+        if (activeQ.empty()) {
+            deque<IOreq*> tmp = activeQ;
+            activeQ = addQ;
+            addQ = tmp;
+        }
+
+        if (activeQ.back()->getTarget() <= pos) {
+            IOreq* nextIOreq = activeQ.back();
+            activeQ.pop_back();
+            return nextIOreq;
+        } else if (activeQ.back()->getTarget() > pos) {
+            if (activeQ.size() == 1) {
+                IOreq* ioreq = activeQ.front();
+                activeQ.pop_front();
+                return ioreq;
+            }
+
+            IOreq* minDistReq = nullptr;
+            int minDist = INT_MAX;
+            int offset = 0;
+            for (int i = 0; i < activeQ.size(); i++) {
+                if (pos <= activeQ.at(i)->getTarget()) {
+                    int dist = abs(activeQ.at(i)->getTarget() - pos);
+                    if (dist < minDist) {
+                        minDist = dist;
+                        minDistReq = activeQ.at(i);
+                        offset = i;
+                    }
+                }
+            }
+
+            activeQ.erase(activeQ.begin() + offset);
+            return minDistReq;
+        }
+    } else { // head is in direction of decrement
+        if (activeQ.empty()) {
+            deque<IOreq*> tmp = activeQ;
+            activeQ = addQ;
+            addQ = tmp;
+        }
+
+        if (activeQ.front()->getTarget() >= pos) {
+            IOreq* nextIOreq = activeQ.front();
+            activeQ.pop_front();
+            return nextIOreq;
+        } else {
+            if (activeQ.size() == 1) {
+                IOreq* ioreq = activeQ.front();
+                activeQ.pop_front();
+                return ioreq;
+            }
+
+            IOreq* minDistReq = nullptr;
+            int minDist = INT_MAX;
+            int offset = 0;
+            for (int i = 0; i < activeQ.size(); ++i) {
+                if (pos >= activeQ.at(i)->getTarget()) {
+                    int dist = abs(pos - activeQ.at(i)->getTarget());
+                    if (dist < minDist) {
+                        minDist = dist;
+                        minDistReq = activeQ.at(i);
+                        offset = i;
+                    }
+                }
+            }
+            activeQ.erase(activeQ.begin() + offset);
+            return minDistReq;
+        }
+    }
+}
+
+bool FLOOKiosched::isIOqueueEmpty() {
+    if (activeQ.empty() && addQ.empty()) return true;
+    return false;
+}

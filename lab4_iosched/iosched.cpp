@@ -23,13 +23,13 @@ bool direction = true; // true: increment, false: decrement
 IOscheduler* IOsched;
 
 int main() {
-    initIOrequests("/Users/yjeonlee/Desktop/Operating_Systems/Operating-Systems-Labs/lab4_iosched/inputs/input9");
+    initIOrequests("/Users/yjeonlee/Desktop/Operating_Systems/Operating-Systems-Labs/lab4_iosched/inputs/input4");
 
     int timer = 0;
     bool isIOactive = false;
     IOreq* curIOreq = nullptr;
 
-    IOsched = new FIFOiosched();
+    IOsched = new FLOOKiosched();
     int finishedCnt = 0;
 
     // simulation
