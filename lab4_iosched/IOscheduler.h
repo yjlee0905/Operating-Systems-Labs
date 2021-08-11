@@ -13,9 +13,9 @@ using namespace std;
 
 class IOscheduler {
 public:
+    IOscheduler();
     virtual void addIOrequest(IOreq* req) = 0;
     virtual IOreq* getNextIOrequest(int pos, bool direction) = 0;
-    //virtual int showNextIOreqArrivaltime() = 0;
     virtual bool isIOqueueEmpty() = 0;
 };
 
@@ -27,7 +27,6 @@ public:
     FIFOiosched();
     void addIOrequest(IOreq* req);
     IOreq* getNextIOrequest(int pos, bool direction);
-    //int showNextIOreqArrivaltime();
     bool isIOqueueEmpty();
 };
 

@@ -3,6 +3,7 @@
 //
 
 #include <iostream>
+#include <unistd.h>
 #include <fstream>
 #include <queue>
 #include "IOreq.h"
@@ -13,6 +14,7 @@ using namespace std;
 void moveHead();
 bool isAllIOreqProcessed();
 void initIOrequests(string fileName);
+void printResults(int timer);
 
 vector<IOreq*> IOrequests;
 int ioReqIdx = 0;
@@ -22,17 +24,61 @@ bool direction = true; // true: increment, false: decrement
 
 IOscheduler* IOsched;
 
-int main() {
-    initIOrequests("/Users/yjeonlee/Desktop/Operating_Systems/Operating-Systems-Labs/lab4_iosched/inputs/input9");
+int main(int argc, char* argv[]) {
+    int c;
+    char schedType;
+    bool isV = false;
 
+    while ((c = getopt(argc, argv, "s:vqf")) != -1) {
+        switch (c) {
+            case 's':
+                sscanf(optarg, "%c", &schedType);
+                break;
+            case 'v':
+                isV = true;
+                break;
+            case 'q':
+                // not implemented
+                break;
+            case 'f':
+                // not implemented
+                break;
+            default:
+                cout << c << " is unsupported option in this program." << endl;
+                exit(1);
+        }
+    }
+
+    switch (schedType) {
+        case 'i':
+            IOsched = new FIFOiosched();
+            break;
+        case 'j':
+            IOsched = new SSTFiosched();
+            break;
+        case 's':
+            IOsched = new LOOKiosched();
+            break;
+        case 'c':
+            IOsched = new CLOOKiosched();
+            break;
+        case 'f':
+            IOsched = new FLOOKiosched();
+            break;
+        default:
+            cout << schedType << " is unsupported Scheduler type in this program." << endl;
+            exit(1);
+    }
+
+    string inFileName = argv[optind];
+    initIOrequests(inFileName);
+
+    // simulation
     int timer = 0;
     bool isIOactive = false;
     IOreq* curIOreq = nullptr;
-
-    IOsched = new FLOOKiosched();
     int finishedCnt = 0;
 
-    // simulation
     while (true) {
         // if a new I/O arrived to the system at this current time
         if ((ioReqIdx != IOrequests.size())
@@ -41,7 +87,9 @@ int main() {
             ioReqIdx++;
             IOsched->addIOrequest(newIOreq);
 
-            cout << timer << ":     " << newIOreq->getReqId() << " add " << newIOreq->getTarget() << endl;
+            if (isV) {
+                cout << timer << ":     " << newIOreq->getReqId() << " add " << newIOreq->getTarget() << endl;
+            }
         }
 
         // if an IO is active and completed at this time
@@ -50,7 +98,10 @@ int main() {
             isIOactive = false;
             finishedCnt++;
 
-            cout << timer << ":     " << curIOreq->getReqId() << " finish " << timer - curIOreq->getArrivalTime() << endl;
+            if (isV) {
+                cout << timer << ":     " << curIOreq->getReqId() << " finish " << timer - curIOreq->getArrivalTime() << endl;
+            }
+
             curIOreq = nullptr;
         }
 
@@ -71,7 +122,9 @@ int main() {
                     continue;
                 }
 
-                cout << timer << ":     " << curIOreq->getReqId() << " issue " << curIOreq->getTarget() << " " << head << endl;
+                if (isV) {
+                    cout << timer << ":     " << curIOreq->getReqId() << " issue " << curIOreq->getTarget() << " " << head << endl;
+                }
 
             }
         }
@@ -83,6 +136,12 @@ int main() {
         timer++;
     }
 
+    printResults(timer);
+
+    return 0;
+}
+
+void printResults(int timer) {
     int totalTurnaroundTime = 0;
     int totalWaitTime = 0;
     int maxWaitTime = -1;
@@ -100,8 +159,6 @@ int main() {
     double avgWaitTime = (double) totalWaitTime / (double) IOrequests.size();
     printf("SUM: %d %d %.2lf %.2lf %d\n",
            timer, totalMovement, avgTurnaround, avgWaitTime, maxWaitTime);
-
-    return 0;
 }
 
 bool isAllIOreqProcessed() {

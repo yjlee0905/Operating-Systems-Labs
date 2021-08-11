@@ -3,7 +3,12 @@
 //
 
 #include <cstdlib>
+#include <climits>
 #include "IOscheduler.h"
+
+using namespace std;
+
+IOscheduler::IOscheduler() {}
 
 FIFOiosched::FIFOiosched() {}
 
@@ -100,16 +105,6 @@ IOreq* LOOKiosched::getNextIOrequest(int pos, bool direction) {
 
             }
 
-//            IOreq* minDistReq = IOreqQ.at(0);
-//            int offset = 0;
-//            for (int i = 1; i < IOreqQ.size(); i++) {
-//                if ((pos <= IOreqQ.at(i)->getTarget()) &&
-//                    abs(pos - IOreqQ.at(i)->getTarget()) < abs(pos - minDistReq->getTarget())) {
-//                    minDistReq = IOreqQ.at(i);
-//                    offset = i;
-//                }
-//            }
-
             IOreqQ.erase(IOreqQ.begin() + offset);
             return minDistReq;
         }
@@ -119,7 +114,6 @@ IOreq* LOOKiosched::getNextIOrequest(int pos, bool direction) {
             IOreqQ.pop_front();
             return nextIOreq;
         } else {
-            // 더 크면 그 앞에거
             if (IOreqQ.size() == 1) {
                 IOreq* ioreq = IOreqQ.front();
                 IOreqQ.pop_front();
@@ -141,44 +135,8 @@ IOreq* LOOKiosched::getNextIOrequest(int pos, bool direction) {
 
             }
 
-
-//            IOreq* minDistReq = IOreqQ.at(0);
-//            int offset = 0;
-//            for (int i = 1; i < IOreqQ.size(); i++) {
-//                if ((pos >= IOreqQ.at(i)->getTarget()) &&
-//                        abs(pos - IOreqQ.at(i)->getTarget()) < abs(pos - minDistReq->getTarget())) {
-//                    minDistReq = IOreqQ.at(i);
-//                    offset = i;
-//                }
-//            }
-
             IOreqQ.erase(IOreqQ.begin() + offset);
             return minDistReq;
-
-//            IOreq* next = IOreqQ.at(0);
-//            for (int i = 1; i < IOreqQ.size(); i++) {
-//                if (pos <= IOreqQ.at(i)->getTarget()) {
-//                    IOreqQ.erase(IOreqQ.begin() + i-1);
-//                    return next;
-//                }
-//                next = IOreqQ.at(i);
-//            }
-//
-//            IOreq* ioreq = IOreqQ.back();
-//            IOreqQ.pop_back();
-//            return ioreq;
-
-//            for (deque<IOreq*>::iterator iter = IOreqQ.end(); iter != IOreqQ.begin(); iter--) {
-//                if (pos >= (*iter)->getTarget()) {
-//                    cout << "pos: " << pos << "     target: " << (*iter)->getTarget() << endl;
-//                    IOreq* nextIOreq = *iter;
-//                    IOreqQ.erase(iter);
-//                    return nextIOreq;
-//                }
-//            }
-
-
-
         }
     }
 }
@@ -308,12 +266,6 @@ IOreq* FLOOKiosched::getNextIOrequest(int pos, bool direction) {
             return minDistReq;
         }
     } else { // head is in direction of decrement
-//        if (activeQ.empty()) {
-//            //cout << "swap1" << endl;
-//            deque<IOreq*> tmp = activeQ;
-//            activeQ = addQ;
-//            addQ = tmp;
-//        }
 
         if (activeQ.front()->getTarget() >= pos) {
             IOreq* nextIOreq = activeQ.front();
