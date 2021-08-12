@@ -12,7 +12,7 @@
 using namespace std;
 
 void moveHead();
-bool isAllIOreqProcessed();
+bool isAllIOreqProcessed(int finishedCnt);
 void initIOrequests(string fileName);
 void printResults(int timer);
 
@@ -107,7 +107,7 @@ int main(int argc, char* argv[]) {
 
         // if no IO request active now
         if (!isIOactive) {
-            if (isAllIOreqProcessed()) {
+            if (isAllIOreqProcessed(finishedCnt)) {
                 break;
             } else if (!IOsched->isIOqueueEmpty()) {
                 curIOreq = IOsched->getNextIOrequest(head, direction);
@@ -145,7 +145,7 @@ void printResults(int timer) {
     int totalTurnaroundTime = 0;
     int totalWaitTime = 0;
     int maxWaitTime = -1;
-    // print results
+
     for (int i = 0; i < IOrequests.size(); i++) {
         printf("%5d: %5d %5d %5d\n", IOrequests.at(i)->getReqId(), IOrequests.at(i)->getArrivalTime(), IOrequests.at(i)->start, IOrequests.at(i)->end);
         totalTurnaroundTime += (IOrequests.at(i)->end - IOrequests.at(i)->getArrivalTime());
@@ -161,14 +161,11 @@ void printResults(int timer) {
            timer, totalMovement, avgTurnaround, avgWaitTime, maxWaitTime);
 }
 
-bool isAllIOreqProcessed() {
-    // TODO change to counter
-    for (int i = 0; i < IOrequests.size(); ++i) {
-        if (IOrequests.at(i)->end == -1) {
-            return false;
-        }
+bool isAllIOreqProcessed(int finishedCnt) {
+    if (finishedCnt == IOrequests.size()) {
+        return true;
     }
-    return true;
+    return false;
 }
 
 void moveHead() {
