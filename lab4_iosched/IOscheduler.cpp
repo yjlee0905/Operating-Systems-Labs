@@ -81,9 +81,18 @@ IOreq* LOOKiosched::getNextIOrequest(int pos, bool direction) {
     if (direction) { // head is in direction of increment
         if (IOreqQ.back()->getTarget() <= pos) {
             IOreq* nextIOreq = IOreqQ.back();
-            IOreqQ.pop_back();
+            int offset = IOreqQ.size() - 1;
+            for (int i = 0; i < IOreqQ.size(); ++i) {
+                if (IOreqQ.at(i)->getTarget() == nextIOreq->getTarget()) {
+                    nextIOreq = IOreqQ.at(i);
+                    offset = i;
+                    break;
+                }
+            }
+
+            IOreqQ.erase(IOreqQ.begin() + offset);
             return nextIOreq;
-        } else if (IOreqQ.back()->getTarget() > pos){
+        } else {
             if (IOreqQ.size() == 1) {
                 IOreq* ioreq = IOreqQ.front();
                 IOreqQ.pop_front();
@@ -167,7 +176,7 @@ IOreq* CLOOKiosched::getNextIOrequest(int pos, bool direction) {
         IOreq* nextIOreq = IOreqQ.front();
         IOreqQ.pop_front();
         return nextIOreq;
-    } else if (IOreqQ.back()->getTarget() > pos){
+    } else {
         if (IOreqQ.size() == 1) {
             IOreq* ioreq = IOreqQ.front();
             IOreqQ.pop_front();
@@ -225,7 +234,6 @@ IOreq* FLOOKiosched::getNextIOrequest(int pos, bool direction) {
     }
 
     if (direction) { // head is in direction of increment
-
         // TODO check LOOK and CLOOK
         if (activeQ.back()->getTarget() <= pos) {
             IOreq* nextIOreq = activeQ.back();
