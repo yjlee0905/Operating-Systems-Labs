@@ -21,7 +21,7 @@ public:
 
 class FIFOiosched : public IOscheduler {
 private:
-    deque<IOreq*> IOreqQ;
+    deque<IOreq*> IOqueue;
 
 public:
     FIFOiosched();
@@ -32,7 +32,7 @@ public:
 
 class SSTFiosched : public IOscheduler {
 private:
-    deque<IOreq*> IOreqQ;
+    deque<IOreq*> IOqueue;
 
 public:
     SSTFiosched();
@@ -43,7 +43,7 @@ public:
 
 class LOOKiosched : public IOscheduler {
 private:
-    deque<IOreq*> IOreqQ;
+    deque<IOreq*> IOqueue;
 
 public:
     LOOKiosched();
@@ -54,7 +54,7 @@ public:
 
 class CLOOKiosched : public IOscheduler {
 private:
-    deque<IOreq*> IOreqQ;
+    deque<IOreq*> IOqueue;
 
 public:
     CLOOKiosched();
