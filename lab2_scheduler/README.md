@@ -21,7 +21,7 @@ and the system is implemented using Discrete Event Simulation(DES).
 * PREPRIO(E)
 
 #### File description
-* Constants.h
+* Constants.h : definition of enum and constants
 * Event.h : definition fo class Event
 * Event.cpp : implementation of class Event
 * Process.h : definition of class Process
