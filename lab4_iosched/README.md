@@ -3,7 +3,7 @@
 ### About
 This is simulation for scheduling and optimization of I/O operations. 
 Applications submit their IO requests to the IO subsystem (potentially via the filesystem and page-cache),
-where they are maintained in an IO-queue until the dist device is ready for servicing another request.
+where they are maintained in an IO-queue until the disk device is ready for servicing another request.
 The IO-scheduler then selects a request from the IO-queue and submits it to the disk device. 
 On completion, another request can be taken from the IO-queue and submitted to the disk.
 The scheduling policies will allow for some optimization as to reduce disk head movement or overall wait time in the system.
